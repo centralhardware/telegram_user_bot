@@ -127,8 +127,7 @@ async def handler(event):
             pass
     if admins:
         logging.info("found admins: %s\n ", admins)
-        await event.respond('@' + admins[0])
-    await client.delete_messages(event.chat_id, [event.id])
+        await client.edit_message(event.message, '@' + admins[0])
 
 
 
