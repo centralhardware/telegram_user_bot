@@ -100,20 +100,14 @@ async def handler(event):
             pass
 
     if event.raw_text != '':
-        logging.info("triggered in chat %s on message: %s", chat_title, event.raw_text)
-        logging.info("found admins: %s ", admins)
+        logging.info("%s: %s (%s)", chat_title, event.raw_text, admins)
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins)]]
         clickhouse.insert('telegram_messages', data, ['date_time', 'message', 'chat', 'chat_id', 'admins'])
-        logging.info("insert new message\n")
     else:
-        logging.info("ignore empty message\n")
+        logging.info("ignore empty message")
 
 @client.on(events.NewMessage(outgoing=True, pattern='!admin', forwards=False))
 async def handler(event):
-    try:
-        logging.info("notify admin in %s", event.chat.title)
-    except AttributeError:
-        pass
     admins = []
     async for user in client.iter_participants(event.chat):
         try:
@@ -126,14 +120,14 @@ async def handler(event):
         except TypeError:
             pass
     if admins:
-        logging.info("found admins: %s\n ", admins)
+        logging.info("notify admin in %s (%s) ",event.chat.title, admins)
         await client.edit_message(event.message, '@' + admins[0])
 
 
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.info('start application')
 
     client.connect()
