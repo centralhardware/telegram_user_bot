@@ -92,6 +92,8 @@ async def handler(event):
 
     if chat_title == '':
         chat_title = chat_id
+    if chat_id is None:
+        chat_id = ''
 
     admins = []
     async for user in client.iter_participants(event.chat):
