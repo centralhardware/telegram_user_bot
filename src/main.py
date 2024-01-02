@@ -34,6 +34,10 @@ clickhouse.command("""
     ALTER TABLE telegram_messages
     ADD COLUMN IF NOT EXISTS chat_id String
 """)
+clickhouse.command("""
+    ALTER TABLE telegram_messages
+    ADD COLUMN IF NOT EXISTS id BIGINT
+""")
 
 
 async def handle_post(request):
@@ -109,8 +113,8 @@ async def handler(event):
 
     if event.raw_text != '':
         logging.info("%s: %s (%s)", chat_title, event.raw_text, admins)
-        data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins)]]
-        clickhouse.insert('telegram_messages', data, ['date_time', 'message', 'chat', 'chat_id', 'admins'])
+        data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins), event.chat_id]]
+        clickhouse.insert('telegram_messages', data, ['date_time', 'message', 'chat', 'chat_id', 'admins', 'id'])
     else:
         logging.info("ignore empty message")
 
