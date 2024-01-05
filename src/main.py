@@ -89,7 +89,7 @@ async def handler(event):
     if event.raw_text != '':
         logging.info("%s: %s (%s)", chat_title, event.raw_text, admins)
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins), event.chat_id]]
-        clickhouse.insert('telegram_messages', data, ['date_time', 'message', 'title', 'username', 'admins', 'id'])
+        clickhouse.insert('telegram_messages_new', data, ['date_time', 'message', 'title', 'username', 'admins', 'id'])
     else:
         logging.info("ignore empty message")
 
