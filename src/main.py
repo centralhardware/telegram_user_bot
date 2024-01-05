@@ -23,22 +23,6 @@ password = os.getenv("DB_PASSWORD")
 host = os.getenv("DB_HOST")
 database = os.getenv("DB_DATABASE")
 clickhouse = clickhouse_connect.get_client(host=host, database=database, port=8123, username=user, password=password)
-clickhouse.command("""
-    CREATE TABLE IF NOT EXISTS telegram_messages (
-                                                 date_time DateTime,
-                                                 message String,
-                                                 chat String)
-    ENGINE MergeTree ORDER BY date_time
-""")
-clickhouse.command("""
-    ALTER TABLE telegram_messages
-    ADD COLUMN IF NOT EXISTS chat_id String
-""")
-clickhouse.command("""
-    ALTER TABLE telegram_messages
-    ADD COLUMN IF NOT EXISTS id BIGINT
-""")
-
 
 async def handle_post(request):
     body = await request.text()
@@ -114,7 +98,7 @@ async def handler(event):
     if event.raw_text != '':
         logging.info("%s: %s (%s)", chat_title, event.raw_text, admins)
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins), event.chat_id]]
-        clickhouse.insert('telegram_messages', data, ['date_time', 'message', 'chat', 'chat_id', 'admins', 'id'])
+        clickhouse.insert('telegram_messages', data, ['date_time', 'message', 'title', 'username', 'admins', 'id'])
     else:
         logging.info("ignore empty message")
 
