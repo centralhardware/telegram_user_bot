@@ -78,7 +78,7 @@ async def handler(event):
         if hasattr(chat, "username") and chat.username is not None:
             chat_id = chat.username
         if hasattr(chat, "first_name"):
-            chat_id = chat.first_name + ' ' + chat.last_name
+            chat_title = chat.first_name + ' ' + chat.last_name
 
     if chat_title == '':
         chat_title = chat_id
