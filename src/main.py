@@ -8,6 +8,8 @@ import clickhouse_connect
 from aiohttp import web
 from telethon import events
 from telethon.sync import TelegramClient
+from telethon.tl.types import ChatParticipantCreator
+
 
 def str2bool(boolean_string):
     return boolean_string.lower() in ("yes", "true", "t", "1")
@@ -73,9 +75,9 @@ async def handler(event):
         chat_id = event.chat.username
     else:
         chat = await event.get_chat()
-        if chat.username is not None:
+        if hasattr(chat, "username") and chat.username is not None:
             chat_id = chat.username
-        else:
+        if hasattr(chat, "first_name"):
             chat_id = chat.first_name + ' ' + chat.last_name
 
     if chat_title == '':
@@ -83,18 +85,7 @@ async def handler(event):
     if chat_id is None:
         chat_id = ''
 
-    admins = []
-    async for user in client.iter_participants(event.chat):
-        try:
-            if user.username.lower().endswith('bot'):
-                continue
-            if user.participant.admin_rights.delete_messages:
-                admins.append(user.username)
-        except AttributeError:
-            pass
-        except TypeError:
-            pass
-
+    admins = await get_admins(event.chat)
     if event.raw_text != '':
         logging.info("%s: %s (%s)", chat_title, event.raw_text, admins)
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins), event.chat_id]]
@@ -104,21 +95,27 @@ async def handler(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!admin', forwards=False))
 async def handler(event):
-    admins = []
-    async for user in client.iter_participants(event.chat):
-        try:
-            if user.username.lower().endswith('bot'):
-                continue
-            if user.participant.admin_rights.delete_messages:
-                admins.append(user.username)
-        except AttributeError:
-            pass
-        except TypeError:
-            pass
+    admins = await get_admins(event.chat)
     if admins:
         logging.info("notify admin in %s (%s) ",event.chat.title, admins)
         await client.edit_message(event.message, '@' + admins[0])
 
+async def get_admins(chat):
+    admins = []
+    async for user in client.iter_participants(chat):
+        try:
+            if user.bot:
+                continue
+            if isinstance(user.participant, ChatParticipantCreator) or user.participant.admin_rights.delete_messages:
+                if user.username is not None:
+                    admins.append(user.username)
+                else:
+                    admins.append(user.usernames[0].username)
+        except AttributeError:
+            pass
+        except TypeError:
+            pass
+    return admins
 
 
 
