@@ -85,18 +85,20 @@ async def handler(event):
     if chat_id is None:
         chat_id = ''
 
-    admins = await get_admins(event.chat)
+    t = await get_admins(event.chat)
     if event.raw_text != '':
-        logging.info("%s: %s (%s)", chat_title, event.raw_text, admins)
-        data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(admins), event.chat_id]]
-        clickhouse.insert('telegram_messages_new', data, ['date_time', 'message', 'title', 'username', 'admins', 'id'])
+        logging.info("%s: %s %s (%s)", chat_title, event.raw_text, t[1], t[0])
+        data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(t[0]), event.chat_id, t[1]]]
+        clickhouse.insert('telegram_messages_new', data,
+                          ['date_time', 'message', 'title', 'username', 'admins', 'id', 'members_count'])
     else:
         logging.info("ignore empty message")
 
 
 @client.on(events.NewMessage(outgoing=True, pattern='!admin', forwards=False))
 async def handler(event):
-    admins = await get_admins(event.chat)
+    t = await get_admins(event.chat)
+    admins = t[0]
     if admins:
         logging.info("notify admin in %s (%s) ", event.chat.title, admins)
         await client.edit_message(event.message, '@' + admins[0])
@@ -104,8 +106,10 @@ async def handler(event):
 
 async def get_admins(chat):
     admins = []
+    count = 0
     async for user in client.iter_participants(chat):
         try:
+            count = count + 1
             if user.bot:
                 continue
             if isinstance(user.participant, ChatParticipantCreator) or user.participant.admin_rights.delete_messages:
@@ -117,7 +121,7 @@ async def get_admins(chat):
             pass
         except TypeError:
             pass
-    return admins
+    return [admins, count]
 
 
 if __name__ == '__main__':
