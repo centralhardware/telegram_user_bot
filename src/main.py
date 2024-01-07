@@ -71,6 +71,9 @@ async def handler(event):
     chat_id = ''
     if hasattr(event.chat, "title"):
         chat_title = event.chat.title
+    else:
+        if event.chat is not None and event.chat.bot and hasattr(event.chat, "first_name"):
+            chat_title = event.chat.first_name
     if hasattr(event.chat, "username"):
         chat_id = event.chat.username
     else:
