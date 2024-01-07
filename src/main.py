@@ -26,6 +26,7 @@ host = os.getenv("DB_HOST")
 database = os.getenv("DB_DATABASE")
 clickhouse = clickhouse_connect.get_client(host=host, database=database, port=8123, username=user, password=password)
 
+
 async def handle_post(request):
     body = await request.text()
     if not body:
@@ -63,10 +64,11 @@ async def handle(username, text):
         await conv.send_message(text)
         return True
 
+
 @client.on(events.NewMessage(outgoing=True))
 async def handler(event):
     chat_title = ''
-    chat_id= ''
+    chat_id = ''
     if hasattr(event.chat, "title"):
         chat_title = event.chat.title
     if hasattr(event.chat, "username"):
@@ -91,12 +93,14 @@ async def handler(event):
     else:
         logging.info("ignore empty message")
 
+
 @client.on(events.NewMessage(outgoing=True, pattern='!admin', forwards=False))
 async def handler(event):
     admins = await get_admins(event.chat)
     if admins:
-        logging.info("notify admin in %s (%s) ",event.chat.title, admins)
+        logging.info("notify admin in %s (%s) ", event.chat.title, admins)
         await client.edit_message(event.message, '@' + admins[0])
+
 
 async def get_admins(chat):
     admins = []
@@ -114,7 +118,6 @@ async def get_admins(chat):
         except TypeError:
             pass
     return admins
-
 
 
 if __name__ == '__main__':
