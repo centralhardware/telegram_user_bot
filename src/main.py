@@ -94,9 +94,9 @@ async def handler(event):
     t = await get_admins(event.chat)
     if event.raw_text != '':
         logging.info("%s: %s %s (%s)", chat_title, event.raw_text, t[1], t[0])
-        data = [[datetime.now(), event.raw_text, chat_title, chat_id, ','.join(t[0]), event.chat_id, t[1]]]
+        data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, t[1]], t[0]]
         clickhouse.insert('telegram_messages_new', data,
-                          ['date_time', 'message', 'title', 'username', 'admins', 'id', 'members_count'])
+                          ['date_time', 'message', 'title', 'username', 'id', 'members_count', 'admins2'])
     else:
         logging.info("ignore empty message")
 
