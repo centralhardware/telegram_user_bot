@@ -1,8 +1,6 @@
-import json
 import logging
 import os
 from datetime import datetime
-from json.decoder import JSONDecodeError
 
 import clickhouse_connect
 from aiohttp import web
@@ -10,42 +8,22 @@ from telethon import events
 from telethon.sync import TelegramClient
 from telethon.tl.types import ChatParticipantCreator
 
+config = {
+    'api_id': int(os.getenv('API_ID')),
+    'api_hash': os.getenv('API_HASH'),
+    'telephone': os.getenv('TELEPHONE'),
+    'db_user': os.getenv("DB_USER"),
+    'db_password': os.getenv("DB_PASSWORD"),
+    'db_host': os.getenv("DB_HOST"),
+    'db_database': os.getenv("DB_DATABASE"),
+}
 
-def str2bool(boolean_string):
-    return boolean_string.lower() in ("yes", "true", "t", "1")
-
-
-api_id = int(os.getenv('API_ID'))
-api_hash = os.getenv('API_HASH')
-telephone = os.getenv('TELEPHONE')
-client = TelegramClient('session/alex', api_id, api_hash)
-
-user = os.getenv("DB_USER")
-password = os.getenv("DB_PASSWORD")
-host = os.getenv("DB_HOST")
-database = os.getenv("DB_DATABASE")
-clickhouse = clickhouse_connect.get_client(host=host, database=database, port=8123, username=user, password=password)
+client = TelegramClient('session/alex', config['api_id'], config['api_hash'])
+clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=config['db_database'], port=8123,
+                                           username=config['db_user'], password=config['db_password'])
 
 
 async def handle_post(request):
-    body = await request.text()
-    if not body:
-        return web.Response(status=422, body='emtpy body')
-    try:
-        data = json.loads(body)
-        result = await handle(data['username'], data['text'])
-    except JSONDecodeError:
-        return web.Response(status=422, body='invalid json')
-    except KeyError:
-        return web.Response(status=422, body='mission required param username')
-
-    if result:
-        return web.Response(status=200, body='ok')
-    else:
-        return web.Response(status=400, body='bot offline')
-
-
-async def handle_get(request):
     try:
         username = request.query['username']
         text = request.query['text']
@@ -93,7 +71,7 @@ async def handler(event):
 
     t = await get_admins(event.chat)
     if event.raw_text != '':
-        logging.info("%s: %s %s (%s)", chat_title, event.raw_text, t[1], t[0])
+        logging.info(f"{chat_title}: {event.raw_text} {t[1]} {t[0]}")
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, t[1], t[0]]]
         clickhouse.insert('telegram_messages_new', data,
                           ['date_time', 'message', 'title', 'username', 'id', 'members_count', 'admins2'])
@@ -106,7 +84,7 @@ async def handler(event):
     t = await get_admins(event.chat)
     admins = t[0]
     if admins:
-        logging.info("notify admin in %s (%s) ", event.chat.title, admins)
+        logging.info(f"notify admin in {event.chat.title} ({admins})")
         await client.edit_message(event.message, '@' + admins[0])
 
 
@@ -135,9 +113,8 @@ if __name__ == '__main__':
     logging.info('start application')
 
     client.connect()
-    client.start(phone=telephone)
+    client.start(phone=config['telephone'])
     app = web.Application()
-    app.add_routes([web.post('/', handle_post),
-                    web.get('/', handle_get)])
+    app.add_routes([web.post('/', handle_post)])
     web.run_app(app, port=8080)
     client.disconnect()
