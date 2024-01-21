@@ -90,7 +90,7 @@ async def handler(event):
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
-    if (event.chat_id >= 0 or event.is_private == True): return
+    if event.chat_id >= 0 or event.is_private == True or event.raw_text == '': return
 
     usernames = []
     if (event.message.sender.username is not None):
