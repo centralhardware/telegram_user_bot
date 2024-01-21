@@ -98,12 +98,17 @@ async def handler(event):
     elif (event.message.sender.usernames is not None):
         usernames = event.message.sender.usernames
 
+    try:
+        first_name = event.message.sender.first_name
+    except KeyError:
+        first_name = None
+
     data = [[
         datetime.now(),
         event.chat.title,
         event.chat_id,
         usernames,
-        event.message.sender.first_name,
+        first_name,
         event.message.sender.last_name,
         event.message.sender.id,
         event.message.id,
