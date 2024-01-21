@@ -88,6 +88,31 @@ async def handler(event):
         await client.edit_message(event.message, '@' + admins[0])
 
 
+@client.on(events.NewMessage(incoming=True))
+async def handler(event):
+    if (event.chat_id >= 0 or event.is_private == True): return
+
+    usernames = []
+    if (event.message.sender.username is not None):
+        usernames.append(event.message.sender.username)
+    elif (event.message.sender.usernames is not None):
+        usernames = event.message.sender.usernames
+
+    data = [[
+        datetime.now(),
+        event.chat.title,
+        event.chat_id,
+        usernames,
+        event.message.sender.first_name,
+        event.message.sender.last_name,
+        event.message.sender.id,
+        event.message.id,
+        event.raw_text
+    ]]
+    clickhouse.insert('chats_log', data, ['date_time', 'chat_title','chat_id' , 'username', 'first_name', 'second_name', 'user_id', 'message_id', 'message'])
+
+    logging.info(f"log message in chat {event.chat.title} {event.message.id}")
+
 async def get_admins(chat):
     admins = []
     count = 0
