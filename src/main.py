@@ -96,7 +96,8 @@ async def handler(event):
     if (event.message.sender.username is not None):
         usernames.append(event.message.sender.username)
     elif (event.message.sender.usernames is not None):
-        usernames = event.message.sender.usernames
+        for u in event.message.sender.usernames:
+            usernames.append(u.username)
 
     try:
         first_name = event.message.sender.first_name
