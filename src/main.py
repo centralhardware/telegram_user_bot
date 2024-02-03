@@ -20,17 +20,16 @@ config = {
 
 client = TelegramClient('session/alex', config['api_id'], config['api_hash'])
 clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=config['db_database'], port=8123,
-                                           username=config['db_user'], password=config['db_password'], settings={'async_insert': '1', 'wait_for_async_insert': '0'})
+                                           username=config['db_user'], password=config['db_password'],
+                                           settings={'async_insert': '1', 'wait_for_async_insert': '0'})
 
 
 async def handle_post(request):
     try:
         username = request.query['username']
         text = request.query['text']
-    except KeyError:
-        return web.Response(status=422, body='mission required param username')
-    if not username:
-        return web.Response(status=422, body='username param can not be empty')
+    except Exception:
+        return web.Response(status=400)
     result = await handle(username, text)
     if result:
         return web.Response(status=200, body='ok')
@@ -90,12 +89,14 @@ async def handler(event):
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
+    logging.info(f"log message in chat {event.chat.title} {event.message.id}")
+
     if event.chat_id >= 0 or event.is_private == True or event.raw_text == '': return
 
     usernames = []
-    if (event.message.sender.username is not None):
+    if event.message.sender.username is not None:
         usernames.append(event.message.sender.username)
-    elif (event.message.sender.usernames is not None):
+    elif event.message.sender.usernames is not None:
         for u in event.message.sender.usernames:
             usernames.append(u.username)
 
@@ -115,9 +116,10 @@ async def handler(event):
         event.message.id,
         event.raw_text
     ]]
-    clickhouse.insert('chats_log', data, ['date_time', 'chat_title','chat_id' , 'username', 'first_name', 'second_name', 'user_id', 'message_id', 'message'])
+    clickhouse.insert('chats_log', data,
+                      ['date_time', 'chat_title', 'chat_id', 'username', 'first_name', 'second_name', 'user_id',
+                       'message_id', 'message'])
 
-    logging.info(f"log message in chat {event.chat.title} {event.message.id}")
 
 async def get_admins(chat):
     admins = []
