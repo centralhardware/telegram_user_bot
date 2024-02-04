@@ -102,7 +102,7 @@ async def handler(event):
 
     try:
         first_name = event.message.sender.first_name
-    except KeyError:
+    except Exception:
         first_name = None
 
     data = [[
