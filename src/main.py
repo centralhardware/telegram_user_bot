@@ -91,7 +91,7 @@ async def handler(event):
 async def handler(event):
     logging.info(f"log message in chat {event.chat.title} {event.message.id}")
 
-    if event.chat_id >= 0 or event.is_private == True or event.raw_text == '': return
+    if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     usernames = []
     if event.message.sender.username is not None:
