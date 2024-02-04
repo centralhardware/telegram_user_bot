@@ -102,8 +102,10 @@ async def handler(event):
 
     try:
         first_name = event.message.sender.first_name
+        last_name = event.message.sender.last_name
     except Exception:
         first_name = None
+        last_name = None
 
     data = [[
         datetime.now(),
@@ -111,7 +113,7 @@ async def handler(event):
         event.chat_id,
         usernames,
         first_name,
-        event.message.sender.last_name,
+        last_name,
         event.message.sender.id,
         event.message.id,
         event.raw_text
