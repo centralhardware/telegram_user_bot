@@ -84,7 +84,11 @@ async def handler(event):
     admins = t[0]
     if admins:
         logging.info(f"notify admin in {event.chat.title} ({admins})")
-        await client.edit_message(event.message, '@' + admins[0])
+        await client.delete_messages(event.chat, message_ids=[event.message.id])
+        if event.message.reply_to_msg_id:
+            await client.send_message(event.chat, '@' + admins[0], reply_to=event.message.reply_to_msg_id)
+        else:
+            await client.send_message(event.chat, '@' + admins[0])
 
 
 @client.on(events.NewMessage(incoming=True))
