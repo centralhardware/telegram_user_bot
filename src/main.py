@@ -111,9 +111,9 @@ async def handler(event):
             usernames.append(u.username)
 
     chat_usernames = []
-    if hasattr(event.chat, "username"):
+    if hasattr(event.chat, "username") and event.chat.username is not None:
         chat_usernames.append(event.chat.username)
-    elif hasattr(event.chat, "usernames"):
+    elif hasattr(event.chat, "usernames") and event.chat.usernames is not None:
         for u in event.chat.usernames:
             chat_usernames.append(u.username)
 
@@ -136,7 +136,7 @@ async def handler(event):
         event.message.id,
         event.raw_text
     ]]
-    clickhouse.insert('chats_log', data,
+    clickhouse. insert('chats_log', data,
                       ['date_time', 'chat_title', 'chat_id', 'username', 'chat_usernames', 'first_name', 'second_name',
                        'user_id', 'message_id', 'message'])
 
