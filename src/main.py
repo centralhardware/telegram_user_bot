@@ -60,7 +60,7 @@ async def handler(event):
         chat = await event.get_chat()
         if hasattr(chat, "username") and chat.username is not None:
             chat_id.append(chat.username)
-        elif hasattr(chat, "usernames"):
+        elif hasattr(chat, "usernames") and chat.usernames is not None:
             for u in chat.usernames:
                 chat_id.append(u.username)
         if hasattr(chat, "first_name"):
