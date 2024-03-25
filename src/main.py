@@ -136,7 +136,7 @@ async def handler(event):
         event.message.id,
         event.raw_text
     ]]
-    clickhouse. insert('chats_log', data,
+    clickhouse.insert('chats_log', data,
                       ['date_time', 'chat_title', 'chat_id', 'username', 'chat_usernames', 'first_name', 'second_name',
                        'user_id', 'message_id', 'message'])
 
