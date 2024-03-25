@@ -45,18 +45,24 @@ async def handle(username, text):
 @client.on(events.NewMessage(outgoing=True))
 async def handler(event):
     chat_title = ''
-    chat_id = ''
+    chat_id = []
     if hasattr(event.chat, "title"):
         chat_title = event.chat.title
     else:
         if event.chat is not None and event.chat.bot and hasattr(event.chat, "first_name"):
             chat_title = event.chat.first_name
     if hasattr(event.chat, "username"):
-        chat_id = event.chat.username
+        chat_id.append(event.chat.username)
+    elif hasattr(event.chat, "usernames"):
+        for u in event.chat.usernames:
+            chat_id.append(u.username)
     else:
         chat = await event.get_chat()
         if hasattr(chat, "username") and chat.username is not None:
-            chat_id = chat.username
+            chat_id.append(chat.username)
+        elif hasattr(chat, "usernames"):
+            for u in event.chat.usernames:
+                chat_id.append(u.username)
         if hasattr(chat, "first_name"):
             last_name = chat.last_name
             if last_name is None:
@@ -104,6 +110,13 @@ async def handler(event):
         for u in event.message.sender.usernames:
             usernames.append(u.username)
 
+    chat_usernames = []
+    if hasattr(event.chat, "username"):
+        chat_usernames.append(event.chat.username)
+    elif hasattr(event.chat, "usernames"):
+        for u in event.chat.usernames:
+            chat_usernames.append(u.username)
+
     try:
         first_name = event.message.sender.first_name
         last_name = event.message.sender.last_name
@@ -116,6 +129,7 @@ async def handler(event):
         event.chat.title,
         event.chat_id,
         usernames,
+        chat_usernames,
         first_name,
         last_name,
         event.message.sender.id,
@@ -123,8 +137,8 @@ async def handler(event):
         event.raw_text
     ]]
     clickhouse.insert('chats_log', data,
-                      ['date_time', 'chat_title', 'chat_id', 'username', 'first_name', 'second_name', 'user_id',
-                       'message_id', 'message'])
+                      ['date_time', 'chat_title', 'chat_id', 'username', 'chat_usernames', 'first_name', 'second_name',
+                       'user_id', 'message_id', 'message'])
 
 
 async def get_admins(chat):
