@@ -61,7 +61,7 @@ async def handler(event):
         if hasattr(chat, "username") and chat.username is not None:
             chat_id.append(chat.username)
         elif hasattr(chat, "usernames"):
-            for u in event.chat.usernames:
+            for u in chat.usernames:
                 chat_id.append(u.username)
         if hasattr(chat, "first_name"):
             last_name = chat.last_name
