@@ -70,9 +70,9 @@ async def handler(event):
             chat_title = chat.first_name + ' ' + last_name
 
     if chat_title == '':
-        chat_title = chat_id
+        chat_title = chat_id[0]
     if chat_id is None:
-        chat_id = ''
+        chat_id = []
 
     t = await get_admins(event.chat)
     if event.raw_text != '':
