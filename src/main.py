@@ -51,9 +51,9 @@ async def handler(event):
     else:
         if event.chat is not None and event.chat.bot and hasattr(event.chat, "first_name"):
             chat_title = event.chat.first_name
-    if hasattr(event.chat, "username"):
+    if hasattr(event.chat, "username") and event.chat.username is not None:
         chat_id.append(event.chat.username)
-    elif hasattr(event.chat, "usernames"):
+    elif hasattr(event.chat, "usernames") and event.chat.usernames is not None:
         for u in event.chat.usernames:
             chat_id.append(u.username)
     else:
@@ -71,8 +71,6 @@ async def handler(event):
 
     if chat_title == '':
         chat_title = chat_id[0]
-    if chat_id is None:
-        chat_id = []
 
     t = await get_admins(event.chat)
     if event.raw_text != '':
