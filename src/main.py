@@ -82,7 +82,7 @@ async def handler(event):
         logging.info("ignore empty message")
 
 
-@client.on(events.NewMessage(outgoing=True, pattern='!admin', forwards=False))
+@client.on(events.NewMessage(outgoing=True, pattern='!n', forwards=False))
 async def admin(event):
     t = await get_admins(event.chat)
     admins = t[0]
@@ -94,7 +94,7 @@ async def admin(event):
         else:
             await client.send_message(event.chat, '@' + admins[0])
 
-@client.on(events.NewMessage(outgoing=True, pattern='!admin2', forwards=False))
+@client.on(events.NewMessage(outgoing=True, pattern='!2n', forwards=False))
 async def admin2(event):
     t = await get_admins(event.chat)
     admins = t[0]
