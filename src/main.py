@@ -83,7 +83,7 @@ async def handler(event):
 
 
 @client.on(events.NewMessage(outgoing=True, pattern='!admin', forwards=False))
-async def handler(event):
+async def admin(event):
     t = await get_admins(event.chat)
     admins = t[0]
     if admins:
@@ -93,6 +93,22 @@ async def handler(event):
             await client.send_message(event.chat, '@' + admins[0], reply_to=event.message.reply_to_msg_id)
         else:
             await client.send_message(event.chat, '@' + admins[0])
+
+@client.on(events.NewMessage(outgoing=True, pattern='!admin2', forwards=False))
+async def admin2(event):
+    t = await get_admins(event.chat)
+    admins = t[0]
+    if admins:
+        logging.info(f"notify admin in {event.chat.title} ({admins})")
+        await client.delete_messages(event.chat, message_ids=[event.message.id])
+
+        if len(admins) < 2: return
+
+        msg = f"@{admins[0]} @{admins[1]}"
+        if event.message.reply_to_msg_id:
+            await client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
+        else:
+            await client.send_message(event.chat, msg)
 
 
 @client.on(events.NewMessage(incoming=True))
