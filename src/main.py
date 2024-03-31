@@ -113,7 +113,7 @@ async def admin2(event):
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
-    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id:,}")
 
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
