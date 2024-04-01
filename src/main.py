@@ -23,7 +23,7 @@ client = TelegramClient('session/alex', config['api_id'], config['api_hash'])
 clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=config['db_database'], port=8123,
                                            username=config['db_user'], password=config['db_password'],
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
-detoxify = Detoxify('multilingual')
+detoxify = Detoxify('unbiased')
 
 async def handle_post(request):
     try:
@@ -77,8 +77,8 @@ async def handler(event):
     if event.raw_text != '':
         logging.info(f"{chat_title}: {event.raw_text} {t[1]} {t[0]}")
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, t[1], t[0]]]
-        clickhouse.insert('telegram_messages_new', data,
-                          ['date_time', 'message', 'title', 'usernames', 'id', 'members_count', 'admins2'])
+        # clickhouse.insert('telegram_messages_new', data,
+        #                   ['date_time', 'message', 'title', 'usernames', 'id', 'members_count', 'admins2'])
     else:
         logging.info("ignore empty message")
 
@@ -89,11 +89,11 @@ async def admin(event):
     admins = t[0]
     if admins:
         logging.info(f"notify admin in {event.chat.title} ({admins})")
-        await client.delete_messages(event.chat, message_ids=[event.message.id])
-        if event.message.reply_to_msg_id:
-            await client.send_message(event.chat, '@' + admins[0], reply_to=event.message.reply_to_msg_id)
-        else:
-            await client.send_message(event.chat, '@' + admins[0])
+        # await client.delete_messages(event.chat, message_ids=[event.message.id])
+        # if event.message.reply_to_msg_id:
+        #     await client.send_message(event.chat, '@' + admins[0], reply_to=event.message.reply_to_msg_id)
+        # else:
+        #     await client.send_message(event.chat, '@' + admins[0])
 
 @client.on(events.NewMessage(outgoing=True, pattern='!2n', forwards=False))
 async def admin2(event):
@@ -101,15 +101,15 @@ async def admin2(event):
     admins = t[0]
     if admins:
         logging.info(f"notify admin in {event.chat.title} ({admins})")
-        await client.delete_messages(event.chat, message_ids=[event.message.id])
-
-        if len(admins) < 2: return
-
-        msg = f"@{admins[0]} @{admins[1]}"
-        if event.message.reply_to_msg_id:
-            await client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
-        else:
-            await client.send_message(event.chat, msg)
+        # await client.delete_messages(event.chat, message_ids=[event.message.id])
+        #
+        # if len(admins) < 2: return
+        #
+        # msg = f"@{admins[0]} @{admins[1]}"
+        # if event.message.reply_to_msg_id:
+        #     await client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
+        # else:
+        #     await client.send_message(event.chat, msg)
 
 
 @client.on(events.NewMessage(incoming=True))
@@ -117,7 +117,7 @@ async def handler(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     tox = detoxify.predict(event.raw_text)
-    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id} {tox['toxicity']:.4f}")
+    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -160,25 +160,25 @@ async def handler(event):
         tox['threat'],
         tox['sexual_explicit']
     ]]
-    clickhouse.insert('chats_log', data,
-                      ['date_time',
-                       'chat_title',
-                       'chat_id',
-                       'username',
-                       'chat_usernames',
-                       'first_name',
-                       'second_name',
-                       'user_id',
-                       'message_id',
-                       'message',
-                       'reply_to',
-                       'toxicity',
-                       'severe_toxicity',
-                       'obscene',
-                       'identity_attack',
-                       'insult',
-                       'threat',
-                       'sexual_explicit'])
+    # clickhouse.insert('chats_log', data,
+    #                   ['date_time',
+    #                    'chat_title',
+    #                    'chat_id',
+    #                    'username',
+    #                    'chat_usernames',
+    #                    'first_name',
+    #                    'second_name',
+    #                    'user_id',
+    #                    'message_id',
+    #                    'message',
+    #                    'reply_to',
+    #                    'toxicity',
+    #                    'severe_toxicity',
+    #                    'obscene',
+    #                    'identity_attack',
+    #                    'insult',
+    #                    'threat',
+    #                    'sexual_explicit'])
 
 
 async def get_admins(chat):
