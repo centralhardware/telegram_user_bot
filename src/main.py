@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime
 
+from detoxify import Detoxify
 import clickhouse_connect
 from aiohttp import web
 from telethon import events
@@ -22,7 +23,7 @@ client = TelegramClient('session/alex', config['api_id'], config['api_hash'])
 clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=config['db_database'], port=8123,
                                            username=config['db_user'], password=config['db_password'],
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
-
+detoxify = Detoxify('multilingual')
 
 async def handle_post(request):
     try:
@@ -113,9 +114,10 @@ async def admin2(event):
 
 @client.on(events.NewMessage(incoming=True))
 async def handler(event):
-    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
-
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
+
+    tox = detoxify.predict(event.raw_text)
+    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id} {tox['toxicity']}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -149,11 +151,34 @@ async def handler(event):
         event.message.sender.id,
         event.message.id,
         event.raw_text,
-        event.message.reply_to_msg_id
+        event.message.reply_to_msg_id,
+        tox['toxicity'],
+        tox['severe_toxicity'],
+        tox['obscene'],
+        tox['identity_attack'],
+        tox['insult'],
+        tox['threat'],
+        tox['sexual_explicit']
     ]]
     clickhouse.insert('chats_log', data,
-                      ['date_time', 'chat_title', 'chat_id', 'username', 'chat_usernames', 'first_name', 'second_name',
-                       'user_id', 'message_id', 'message', 'reply_to'])
+                      ['date_time',
+                       'chat_title',
+                       'chat_id',
+                       'username',
+                       'chat_usernames',
+                       'first_name',
+                       'second_name',
+                       'user_id',
+                       'message_id',
+                       'message',
+                       'reply_to',
+                       'toxicity',
+                       'severe_toxicity',
+                       'obscene',
+                       'identity_attack',
+                       'insult',
+                       'threat',
+                       'sexual_explicit'])
 
 
 async def get_admins(chat):
