@@ -13,6 +13,7 @@ config = {
     'api_id': int(os.getenv('API_ID')),
     'api_hash': os.getenv('API_HASH'),
     'telephone': os.getenv('TELEPHONE'),
+    'telephone2': os.getenv('TELEPHONE2'),
     'db_user': os.getenv("DB_USER"),
     'db_password': os.getenv("DB_PASSWORD"),
     'db_host': os.getenv("DB_HOST"),
@@ -20,6 +21,7 @@ config = {
 }
 
 client = TelegramClient('session/alex', config['api_id'], config['api_hash'])
+client2 = TelegramClient('session/alex2', config['api_id'], config['api_hash'])
 clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=config['db_database'], port=8123,
                                            username=config['db_user'], password=config['db_password'],
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
@@ -111,8 +113,8 @@ async def admin2(event):
         else:
             await client.send_message(event.chat, msg)
 
-
 @client.on(events.NewMessage(incoming=True))
+@client2.on(events.NewMessage(incoming=True))
 async def handler(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
@@ -207,6 +209,8 @@ if __name__ == '__main__':
 
     client.connect()
     client.start(phone=config['telephone'])
+    client2.connect()
+    client2.start(phone=config['telephone2'])
     app = web.Application()
     app.add_routes([web.post('/', handle_post)])
     web.run_app(app, port=8080)
