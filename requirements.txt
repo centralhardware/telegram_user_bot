@@ -4,3 +4,4 @@ clickhouse_connect~=0.7.0
 detoxify~=0.5.2
 polyglot~=16.7.4
 six~=1.16.0
+PyICU~= 2.12
