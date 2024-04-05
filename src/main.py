@@ -5,7 +5,6 @@ from datetime import datetime
 from detoxify import Detoxify
 import clickhouse_connect
 from aiohttp import web
-from polyglot.detect import Detector
 from telethon import events
 from telethon.sync import TelegramClient
 from telethon.tl.types import ChatParticipantCreator
@@ -114,9 +113,8 @@ async def handler(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     tox = detoxify.predict(event.raw_text)
-    lang = Detector(event.raw_text)
     logging.info(
-        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {lang.languages} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
