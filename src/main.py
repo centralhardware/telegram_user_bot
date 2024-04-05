@@ -27,6 +27,7 @@ clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=conf
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
 detoxify = Detoxify('multilingual')
 
+
 async def handle_post(request):
     try:
         username = request.query['username']
@@ -87,31 +88,24 @@ async def handler(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!n', forwards=False))
 async def admin(event):
+    if event.raw_text == "!n":
+        n = 1
+    else:
+        n = int(event.raw_text.replace("!n", ""))
     t = await get_admins(event.chat)
     admins = t[0]
     if admins:
-        logging.info(f"notify admin in {event.chat.title} ({admins})")
-        await client.delete_messages(event.chat, message_ids=[event.message.id])
-        if event.message.reply_to_msg_id:
-            await client.send_message(event.chat, '@' + admins[0], reply_to=event.message.reply_to_msg_id)
-        else:
-            await client.send_message(event.chat, '@' + admins[0])
-
-@client.on(events.NewMessage(outgoing=True, pattern='!2n', forwards=False))
-async def admin2(event):
-    t = await get_admins(event.chat)
-    admins = t[0]
-    if admins:
-        logging.info(f"notify admin in {event.chat.title} ({admins})")
+        logging.info(f"notify {n} admins in {event.chat.title} ({admins})")
         await client.delete_messages(event.chat, message_ids=[event.message.id])
 
-        if len(admins) < 2: return
+        admins = admins[:n]
 
-        msg = f"@{admins[0]} @{admins[1]}"
+        msg = f"{admins}"
         if event.message.reply_to_msg_id:
             await client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
         else:
             await client.send_message(event.chat, msg)
+
 
 @client.on(events.NewMessage(incoming=True))
 @client2.on(events.NewMessage(incoming=True))
@@ -119,7 +113,8 @@ async def handler(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     tox = detoxify.predict(event.raw_text)
-    logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+    logging.info(
+        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -162,25 +157,25 @@ async def handler(event):
         tox['threat'],
         tox['sexual_explicit']
     ]]
-    clickhouse.insert('chats_log', data,
-                      ['date_time',
-                       'chat_title',
-                       'chat_id',
-                       'username',
-                       'chat_usernames',
-                       'first_name',
-                       'second_name',
-                       'user_id',
-                       'message_id',
-                       'message',
-                       'reply_to',
-                       'toxicity',
-                       'severe_toxicity',
-                       'obscene',
-                       'identity_attack',
-                       'insult',
-                       'threat',
-                       'sexual_explicit'])
+    # clickhouse.insert('chats_log', data,
+    #                   ['date_time',
+    #                    'chat_title',
+    #                    'chat_id',
+    #                    'username',
+    #                    'chat_usernames',
+    #                    'first_name',
+    #                    'second_name',
+    #                    'user_id',
+    #                    'message_id',
+    #                    'message',
+    #                    'reply_to',
+    #                    'toxicity',
+    #                    'severe_toxicity',
+    #                    'obscene',
+    #                    'identity_attack',
+    #                    'insult',
+    #                    'threat',
+    #                    'sexual_explicit'])
 
 
 async def get_admins(chat):
@@ -193,9 +188,9 @@ async def get_admins(chat):
                 continue
             if isinstance(user.participant, ChatParticipantCreator) or user.participant.admin_rights.delete_messages:
                 if user.username is not None:
-                    admins.append(user.username)
+                    admins.append("@" + user.username)
                 else:
-                    admins.append(user.usernames[0].username)
+                    admins.append("@" + user.usernames[0].username)
         except AttributeError:
             pass
         except TypeError:
