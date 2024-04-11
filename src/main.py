@@ -116,9 +116,12 @@ async def handler(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     tox = detoxify.predict(event.raw_text)
-    lang = lng.detect_language_of(event.raw_text)
+    try:
+        lang = lng.detect_language_of(event.raw_text).name
+    except Exception:
+        lang = '      '
     logging.info(
-        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {lang.name:} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {lang} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -160,7 +163,7 @@ async def handler(event):
         tox['insult'],
         tox['threat'],
         tox['sexual_explicit'],
-        lang.name
+        lang
     ]]
     clickhouse.insert('chats_log', data,
                       ['date_time',
