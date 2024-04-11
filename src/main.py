@@ -5,6 +5,7 @@ from datetime import datetime
 from detoxify import Detoxify
 import clickhouse_connect
 from aiohttp import web
+from lingua import LanguageDetectorBuilder, Language
 from telethon import events
 from telethon.sync import TelegramClient
 from telethon.tl.types import ChatParticipantCreator
@@ -26,6 +27,8 @@ clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=conf
                                            username=config['db_user'], password=config['db_password'],
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
 detoxify = Detoxify('multilingual')
+languages = [Language.ENGLISH, Language.RUSSIAN]
+lng = LanguageDetectorBuilder.from_languages(*languages).with_preloaded_language_models().build()
 
 
 async def handle_post(request):
@@ -113,8 +116,9 @@ async def handler(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     tox = detoxify.predict(event.raw_text)
+    lang = lng.detect_language_of(event.raw_text)
     logging.info(
-        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {lang.name:} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -155,7 +159,8 @@ async def handler(event):
         tox['identity_attack'],
         tox['insult'],
         tox['threat'],
-        tox['sexual_explicit']
+        tox['sexual_explicit'],
+        lang.name
     ]]
     clickhouse.insert('chats_log', data,
                       ['date_time',
@@ -175,7 +180,8 @@ async def handler(event):
                        'identity_attack',
                        'insult',
                        'threat',
-                       'sexual_explicit'])
+                       'sexual_explicit',
+                       'lang'])
 
 
 async def get_admins(chat):
