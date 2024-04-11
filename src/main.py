@@ -100,7 +100,7 @@ async def admin(event):
 
         admins = admins[:n]
 
-        msg = f"{admins}"
+        msg = ", ".join(admins)
         if event.message.reply_to_msg_id:
             await client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
         else:
