@@ -79,10 +79,10 @@ async def save_incoming(event):
     except Exception:
         lang = '      '
 
-    toxicity = "toxic" if tox['toxicity'] > 0.5 else "non toxic"
+    toxicity = "toxic     " if tox['toxicity'] > 0.5 else "non toxic"
     color = "red" if tox['toxicity'] > 0.5 else "green"
     logging.info(
-        f"{event.message.id:12,} {colored(toxicity, color):<10} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<20s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
