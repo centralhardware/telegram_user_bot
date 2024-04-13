@@ -121,7 +121,7 @@ async def handler(event):
     except Exception:
         lang = '      '
     logging.info(
-        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {lang} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -205,6 +205,12 @@ async def get_admins(chat):
         except TypeError:
             pass
     return [admins, count]
+
+@client2.on(events.NewMessage(outgoing=True, pattern='!r', forwards=False))
+async def handler(event):
+    async for dialog in client2.iter_dialogs():
+        logging.info(f"mark {dialog.name} as read")
+        await client2.send_read_acknowledge(dialog, clear_mentions=True, clear_reactions=True)
 
 
 if __name__ == '__main__':
