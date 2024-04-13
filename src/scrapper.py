@@ -88,8 +88,8 @@ async def save_incoming(event):
     wrapped_lines = []
     reserved_symbols = 48
     for i, line in enumerate(raw_text_lines):
-        indent = ' ' * reserved_symbols if i else ''
-        wrapped = textwrap.fill(line, width=130, initial_indent=indent,
+        indent = ' ' * reserved_symbols
+        wrapped = textwrap.fill(line, width=80, initial_indent=indent,
                                 subsequent_indent=indent)
         wrapped_lines.append(wrapped)
 
