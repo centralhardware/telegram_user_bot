@@ -1,3 +1,4 @@
+import functools
 from datetime import datetime
 
 import clickhouse_connect
@@ -54,14 +55,21 @@ async def save_outgoing(event):
         logging.info("ignore empty message")
 
 
+@functools.cache
+def is_baned(chat_id):
+    return r.sismember('banned', chat_id)
+
+
 languages = [Language.ENGLISH, Language.RUSSIAN]
 lng = LanguageDetectorBuilder.from_languages(*languages).with_preloaded_language_models().build()
 detoxify = Detoxify('multilingual')
 config = Config()
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
 
+
 async def save_incoming(event):
-    if r.sismember('banned', event.chat_id): return
+    if is_baned(event.chat_id):
+        return
 
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
