@@ -81,8 +81,12 @@ async def save_incoming(event):
 
     toxicity = "toxic    " if tox['toxicity'] > 0.5 else "non toxic"
     color = "red" if tox['toxicity'] > 0.5 else "green"
+    raw_text_lines = event.raw_text.splitlines()
+    for i in range(1, len(raw_text_lines), 2):
+        raw_text_lines[i] = ' ' * 48 + raw_text_lines[i]
+    adjusted_raw_text = '\n'.join(raw_text_lines)
     logging.info(
-        f"{event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {adjusted_raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -112,23 +116,23 @@ async def save_incoming(event):
         *tox.values(),
         lang
     ]]
-    clickhouse.insert('chats_log', data,
-                      ['date_time',
-                       'chat_title',
-                       'chat_id',
-                       'username',
-                       'chat_usernames',
-                       'first_name',
-                       'second_name',
-                       'user_id',
-                       'message_id',
-                       'message',
-                       'reply_to',
-                       'toxicity',
-                       'severe_toxicity',
-                       'obscene',
-                       'identity_attack',
-                       'insult',
-                       'threat',
-                       'sexual_explicit',
-                       'lang'])
+    # clickhouse.insert('chats_log', data,
+    #                   ['date_time',
+    #                    'chat_title',
+    #                    'chat_id',
+    #                    'username',
+    #                    'chat_usernames',
+    #                    'first_name',
+    #                    'second_name',
+    #                    'user_id',
+    #                    'message_id',
+    #                    'message',
+    #                    'reply_to',
+    #                    'toxicity',
+    #                    'severe_toxicity',
+    #                    'obscene',
+    #                    'identity_attack',
+    #                    'insult',
+    #                    'threat',
+    #                    'sexual_explicit',
+    #                    'lang'])
