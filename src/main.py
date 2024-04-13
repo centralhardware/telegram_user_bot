@@ -31,6 +31,7 @@ client = create_telegram_client('session/alex', config.telephone)
 
 add_event_handlers(client)
 
+client2.add_event_handler(save_incoming, events.NewMessage(incoming=True))
 client2.add_event_handler(read_acknowledge, events.NewMessage(outgoing=True, pattern='!r', forwards=False))
 client2.add_event_handler(ban, events.NewMessage(outgoing=True, pattern='!ban', forwards=False))
 
