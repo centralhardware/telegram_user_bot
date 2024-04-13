@@ -1,14 +1,14 @@
 from src.config import Config
 from telethon.sync import TelegramClient
 
-from src.web import MessageSender
+from web import MessageSender
 import logging
 from aiohttp import web
 from telethon import events
-from src.ban_utils import ban
-from src.notify_admins import notify_admins
-from src.read_acknowledge_utils import read_acknowledge
-from src.scrapper import save_outgoing, save_incoming
+from ban_utils import ban
+from notify_admins import notify_admins
+from read_acknowledge_utils import read_acknowledge
+from scrapper import save_outgoing, save_incoming
 
 config = Config()
 def create_telegram_client(session_name, phone):

@@ -6,8 +6,8 @@ from detoxify import Detoxify
 from lingua import LanguageDetectorBuilder, Language
 import logging
 
-from src.admin_utils import get_admins
-from src.config import Config
+from admin_utils import get_admins
+from config import Config
 
 config = Config()
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,

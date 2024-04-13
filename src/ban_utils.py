@@ -1,6 +1,6 @@
 import redis
 
-from src.config import Config
+from config import Config
 
 config = Config()
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
