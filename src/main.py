@@ -1,4 +1,4 @@
-from src.config import Config
+from config import Config
 from telethon.sync import TelegramClient
 
 from web import MessageSender
