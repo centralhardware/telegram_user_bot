@@ -84,19 +84,8 @@ async def save_incoming(event):
     toxicity = "toxic    " if tox['toxicity'] > 0.5 else "non toxic"
     color = "red" if tox['toxicity'] > 0.5 else "green"
 
-    raw_text_lines = event.raw_text.splitlines()
-    wrapped_lines = []
-    reserved_symbols = 48
-    for i, line in enumerate(raw_text_lines):
-        indent = ' ' * reserved_symbols if i else ''
-        wrapped = textwrap.fill(line, width=80, initial_indent=indent,
-                                subsequent_indent=indent)
-        wrapped_lines.append(wrapped)
-
-    adjusted_raw_text = '\n'.join(wrapped_lines)
-
     logging.info(
-        f"{event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {adjusted_raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
