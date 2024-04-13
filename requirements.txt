@@ -4,5 +4,4 @@ clickhouse_connect~=0.7.0
 detoxify~=0.5.2
 lingua-language-detector~=2.0.2
 redis~=5.0.3
-functools~=0.5
 pymodbus
