@@ -82,7 +82,7 @@ async def save_incoming(event):
     toxicity = "toxic    " if tox['toxicity'] > 0.5 else "non toxic"
     color = "red" if tox['toxicity'] > 0.5 else "green"
     raw_text_lines = event.raw_text.splitlines()
-    for i in range(1, len(raw_text_lines), 2):
+    for i in range(1, len(raw_text_lines)):
         raw_text_lines[i] = ' ' * 48 + raw_text_lines[i]
     adjusted_raw_text = '\n'.join(raw_text_lines)
     logging.info(
