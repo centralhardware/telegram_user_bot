@@ -1,5 +1,6 @@
 from telethon.tl.types import ChatParticipantCreator
 
+
 def build_username(user):
     if user.username is not None:
         return "@" + user.username

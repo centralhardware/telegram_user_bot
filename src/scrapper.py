@@ -1,14 +1,25 @@
 import functools
 from datetime import datetime
-
 import clickhouse_connect
 import redis
 from detoxify import Detoxify
 from lingua import LanguageDetectorBuilder, Language
 import logging
-
 from admin_utils import get_admins
 from config import Config
+from termcolor import colored
+
+
+# Extracted utility function
+def build_usernames_from_chat(chat):
+    chat_usernames = []
+    if hasattr(chat, "username") and chat.username is not None:
+        chat_usernames.append(chat.username)
+    elif hasattr(chat, "usernames") and chat.usernames is not None:
+        for u in chat.usernames:
+            chat_usernames.append(u.username)
+    return chat_usernames
+
 
 config = Config()
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
@@ -18,33 +29,24 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
 
 async def save_outgoing(event):
     chat_title = ''
-    chat_id = []
+    chat_id = build_usernames_from_chat(event.chat)
+
     if hasattr(event.chat, "title"):
         chat_title = event.chat.title
     else:
         if event.chat is not None and event.chat.bot and hasattr(event.chat, "first_name"):
             chat_title = event.chat.first_name
-    if hasattr(event.chat, "username") and event.chat.username is not None:
-        chat_id.append(event.chat.username)
-    elif hasattr(event.chat, "usernames") and event.chat.usernames is not None:
-        for u in event.chat.usernames:
-            chat_id.append(u.username)
-    else:
-        chat = await event.get_chat()
-        if hasattr(chat, "username") and chat.username is not None:
-            chat_id.append(chat.username)
-        elif hasattr(chat, "usernames") and chat.usernames is not None:
-            for u in chat.usernames:
-                chat_id.append(u.username)
-        if hasattr(chat, "first_name"):
-            last_name = chat.last_name
-            if last_name is None:
-                last_name = ""
-            chat_title = chat.first_name + ' ' + last_name
+
+    chat = await event.get_chat()
+    chat_id_copy = build_usernames_from_chat(chat)
+    chat_id.extend(chat_id_copy)
+
+    if hasattr(chat, "first_name"):
+        last_name = chat.last_name if chat.last_name is not None else ""
+        chat_title = chat.first_name + ' ' + last_name
 
     if chat_title == '':
         chat_title = chat_id[0]
-
     t = await get_admins(event.chat)
     if event.raw_text != '':
         logging.info(f"{chat_title}: {event.raw_text} {t[1]} {t[0]}")
@@ -70,16 +72,17 @@ r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses
 async def save_incoming(event):
     if is_baned(event.chat_id):
         return
-
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
-
     tox = detoxify.predict(event.raw_text)
     try:
         lang = lng.detect_language_of(event.raw_text).name
     except Exception:
         lang = '      '
+
+    toxicity = "toxic" if tox['toxicity'] > 0.5 else "non toxic"
+    color = "red" if tox['toxicity'] > 0.5 else "green"
     logging.info(
-        f"{event.message.id:12,} {event.chat.title[:20]:<20s} {tox['toxicity']:.4f} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{str(event.message.id):12} {colored(toxicity, color):<10} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -87,21 +90,13 @@ async def save_incoming(event):
     elif event.message.sender.usernames is not None:
         for u in event.message.sender.usernames:
             usernames.append(u.username)
-
-    chat_usernames = []
-    if hasattr(event.chat, "username") and event.chat.username is not None:
-        chat_usernames.append(event.chat.username)
-    elif hasattr(event.chat, "usernames") and event.chat.usernames is not None:
-        for u in event.chat.usernames:
-            chat_usernames.append(u.username)
-
+    chat_usernames = build_usernames_from_chat(event.chat)
     try:
         first_name = event.message.sender.first_name
         last_name = event.message.sender.last_name
     except Exception:
         first_name = None
         last_name = None
-
     data = [[
         datetime.now(),
         event.chat.title,
@@ -114,13 +109,7 @@ async def save_incoming(event):
         event.message.id,
         event.raw_text,
         event.message.reply_to_msg_id,
-        tox['toxicity'],
-        tox['severe_toxicity'],
-        tox['obscene'],
-        tox['identity_attack'],
-        tox['insult'],
-        tox['threat'],
-        tox['sexual_explicit'],
+        *tox.values(),
         lang
     ]]
     clickhouse.insert('chats_log', data,
