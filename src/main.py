@@ -5,6 +5,7 @@ from datetime import datetime
 from detoxify import Detoxify
 import clickhouse_connect
 from aiohttp import web
+import redis
 from lingua import LanguageDetectorBuilder, Language
 from telethon import events
 from telethon.sync import TelegramClient
@@ -19,6 +20,8 @@ config = {
     'db_password': os.getenv("DB_PASSWORD"),
     'db_host': os.getenv("DB_HOST"),
     'db_database': os.getenv("DB_DATABASE"),
+    'redis_host': os.getenv("REDIS_HOST"),
+    'redis_port': os.getenv('REDIS_PORT')
 }
 
 client = TelegramClient('session/alex', config['api_id'], config['api_hash'])
@@ -29,6 +32,7 @@ clickhouse = clickhouse_connect.get_client(host=config['db_host'], database=conf
 detoxify = Detoxify('multilingual')
 languages = [Language.ENGLISH, Language.RUSSIAN]
 lng = LanguageDetectorBuilder.from_languages(*languages).with_preloaded_language_models().build()
+r = redis.Redis(host=config.get('redis_host'), port=config.get('redis_port'), decode_responses=True)
 
 
 async def handle_post(request):
@@ -113,6 +117,8 @@ async def admin(event):
 @client.on(events.NewMessage(incoming=True))
 @client2.on(events.NewMessage(incoming=True))
 async def handler(event):
+    if r.sismember('banned', event.chat_id): return
+
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     tox = detoxify.predict(event.raw_text)
@@ -206,11 +212,17 @@ async def get_admins(chat):
             pass
     return [admins, count]
 
+
 @client2.on(events.NewMessage(outgoing=True, pattern='!r', forwards=False))
 async def handler(event):
     async for dialog in client2.iter_dialogs():
         logging.info(f"mark {dialog.name} as read")
         await client2.send_read_acknowledge(dialog, clear_mentions=True, clear_reactions=True)
+
+
+@client2.on(events.NewMessage(outgoing=True, pattern='!ban', forwards=False))
+async def handler(event):
+    await r.sadd('banned', event.raw_text.replace('!ban ', ''))
 
 
 if __name__ == '__main__':
@@ -223,5 +235,5 @@ if __name__ == '__main__':
     client2.start(phone=config['telephone2'])
     app = web.Application()
     app.add_routes([web.post('/', handle_post)])
-    web.run_app(app, port=8080)
+    web.run_app(app, port=8080, loop=client.loop)
     client.disconnect()
