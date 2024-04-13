@@ -1,4 +1,6 @@
 import functools
+import shutil
+import textwrap
 from datetime import datetime
 import clickhouse_connect
 import redis
@@ -81,10 +83,19 @@ async def save_incoming(event):
 
     toxicity = "toxic    " if tox['toxicity'] > 0.5 else "non toxic"
     color = "red" if tox['toxicity'] > 0.5 else "green"
+
     raw_text_lines = event.raw_text.splitlines()
-    for i in range(1, len(raw_text_lines)):
-        raw_text_lines[i] = ' ' * 48 + raw_text_lines[i]
-    adjusted_raw_text = '\n'.join(raw_text_lines)
+    wrapped_lines = []
+    terminal_width = shutil.get_terminal_size().columns
+    reserved_symbols = 48
+    for i, line in enumerate(raw_text_lines):
+        indent = ' ' * reserved_symbols if i else ''
+        wrapped = textwrap.fill(line, width=terminal_width - reserved_symbols, initial_indent=indent,
+                                subsequent_indent=indent)
+        wrapped_lines.append(wrapped)
+
+    adjusted_raw_text = '\n'.join(wrapped_lines)
+
     logging.info(
         f"{event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {adjusted_raw_text} reply to {event.message.reply_to_msg_id}")
 
