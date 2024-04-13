@@ -86,11 +86,10 @@ async def save_incoming(event):
 
     raw_text_lines = event.raw_text.splitlines()
     wrapped_lines = []
-    terminal_width = shutil.get_terminal_size().columns
     reserved_symbols = 48
     for i, line in enumerate(raw_text_lines):
         indent = ' ' * reserved_symbols if i else ''
-        wrapped = textwrap.fill(line, width=terminal_width - reserved_symbols, initial_indent=indent,
+        wrapped = textwrap.fill(line, width=130, initial_indent=indent,
                                 subsequent_indent=indent)
         wrapped_lines.append(wrapped)
 
@@ -147,3 +146,4 @@ async def save_incoming(event):
                        'threat',
                        'sexual_explicit',
                        'lang'])
+
