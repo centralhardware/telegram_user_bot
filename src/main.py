@@ -13,7 +13,6 @@ from scrapper import save_outgoing, save_incoming
 
 def create_telegram_client(session_name, phone):
     c = TelegramClient(session_name, config.api_id, config.api_hash)
-    c.session.save_entities=False
     c.connect()
     c.start(phone=phone)
     return c
