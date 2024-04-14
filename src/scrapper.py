@@ -1,6 +1,4 @@
 import functools
-import shutil
-import textwrap
 from datetime import datetime
 import clickhouse_connect
 import redis
@@ -8,7 +6,7 @@ from detoxify import Detoxify
 from lingua import LanguageDetectorBuilder, Language
 import logging
 from admin_utils import get_admins
-from config import Config
+from config import config
 from termcolor import colored
 
 
@@ -23,7 +21,6 @@ def build_usernames_from_chat(chat):
     return chat_usernames
 
 
-config = Config()
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password,
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
@@ -67,7 +64,6 @@ def is_baned(chat_id):
 languages = [Language.ENGLISH, Language.RUSSIAN]
 lng = LanguageDetectorBuilder.from_languages(*languages).with_preloaded_language_models().build()
 detoxify = Detoxify('multilingual')
-config = Config()
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
 
 

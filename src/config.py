@@ -13,3 +13,6 @@ class Config:
         self.db_database = os.getenv("DB_DATABASE")
         self.redis_host = os.getenv("REDIS_HOST")
         self.redis_port = os.getenv('REDIS_PORT')
+
+
+config = Config()

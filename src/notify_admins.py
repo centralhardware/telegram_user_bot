@@ -1,6 +1,7 @@
 import logging
 from admin_utils import get_admins
 
+
 def _get_notify_count(raw_text):
     if raw_text == "!n":
         return 1
