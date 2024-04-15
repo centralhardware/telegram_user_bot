@@ -19,10 +19,8 @@ class Accumulator:
             self.start_time = time.time()
 
     def flush(self):
-        start = time.time()
         self.external_function(self.data)
-        end = time.time()
-        flush_time = end - start
+        flush_time = time.time() - self.start_time
         adjustment = int(self.item_limit * 0.1)
         if self.last_flush_time:
             if flush_time < self.last_flush_time:
