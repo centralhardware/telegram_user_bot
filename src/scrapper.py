@@ -9,6 +9,8 @@ from admin_utils import get_admins
 from config import config
 from termcolor import colored
 
+from Accumulator import Accumulator
+
 
 # Extracted utility function
 def build_usernames_from_chat(chat):
@@ -23,6 +25,7 @@ def build_usernames_from_chat(chat):
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password)
+
 
 async def save_outgoing(event):
     chat_title = ''
@@ -64,7 +67,32 @@ lng = LanguageDetectorBuilder.from_languages(*languages).with_preloaded_language
 detoxify = Detoxify('multilingual')
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
 
-b = []
+
+async def save_data(data):
+    logging.info("save data to clickhouse")
+    clickhouse.insert('chats_log', data,
+                      ['date_time',
+                       'chat_title',
+                       'chat_id',
+                       'username',
+                       'chat_usernames',
+                       'first_name',
+                       'second_name',
+                       'user_id',
+                       'message_id',
+                       'message',
+                       'reply_to',
+                       'toxicity',
+                       'severe_toxicity',
+                       'obscene',
+                       'identity_attack',
+                       'insult',
+                       'threat',
+                       'sexual_explicit',
+                       'lang'])
+
+
+acc = Accumulator(50, save_data)
 
 
 async def save_incoming(event):
@@ -98,7 +126,7 @@ async def save_incoming(event):
         first_name = None
         last_name = None
 
-    b.append([
+    acc.add([
         datetime.now(),
         event.chat.title,
         event.chat_id,
@@ -113,28 +141,3 @@ async def save_incoming(event):
         *tox.values(),
         lang
     ])
-
-    if len(b) > 50:
-        logging.info("save data to clickhouse")
-        clickhouse.insert('chats_log', b,
-                          ['date_time',
-                           'chat_title',
-                           'chat_id',
-                           'username',
-                           'chat_usernames',
-                           'first_name',
-                           'second_name',
-                           'user_id',
-                           'message_id',
-                           'message',
-                           'reply_to',
-                           'toxicity',
-                           'severe_toxicity',
-                           'obscene',
-                           'identity_attack',
-                           'insult',
-                           'threat',
-                           'sexual_explicit',
-                           'lang'])
-        b = []
-
