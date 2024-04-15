@@ -91,7 +91,7 @@ def save_data(data):
                        'lang'])
 
 
-acc = Accumulator(50, save_data)
+acc = Accumulator(save_data)
 
 
 async def save_incoming(event):
