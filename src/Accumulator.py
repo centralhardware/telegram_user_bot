@@ -20,6 +20,7 @@ class Accumulator:
 
     def flush(self):
         self.external_function(self.data)
+        end = time.time()
         flush_time = time.time() - self.start_time
         adjustment = int(self.item_limit * 0.1)
         if self.last_flush_time:
@@ -31,7 +32,7 @@ class Accumulator:
                 print(f'Resizing the item limit. New limit: {self.item_limit}')
         self.last_flush_time = flush_time
         print(
-            f'Data flushed. Time taken: {flush_time}s. New item limit: {self.item_limit}. Avg speed: {(end - self.start_time) / (self.total_items_added if self.total_items_added > 0 else 1)} items/s')
+            f'Data flushed. Time taken: {flush_time}s. New item limit: {self.item_limit}. Avg speed: {flush_time / (self.total_items_added if self.total_items_added > 0 else 1)} items/s')
         self.data.clear()
 
     def get_len(self):

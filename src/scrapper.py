@@ -68,7 +68,7 @@ detoxify = Detoxify('multilingual')
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
 
 
-async def save_data(data):
+def save_data(data):
     logging.info("save data to clickhouse")
     clickhouse.insert('chats_log', data,
                       ['date_time',
