@@ -24,7 +24,7 @@ class Accumulator:
     def flush(self):
         self.external_function(self.data)
         logging.info(
-            f'Data flushed. Avg speed: {10 / (self.total_items_added if self.total_items_added > 0 else 1)} items/s')
+            f'Data flushed. Items added {self.total_items_added}. Avg speed: {round(10 / (self.total_items_added if self.total_items_added > 0 else 1), 2)} items/s')
         self.data.clear()
 
     def get_len(self):
