@@ -22,8 +22,7 @@ def build_usernames_from_chat(chat):
 
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
-                                           username=config.db_user, password=config.db_password,
-                                           settings={'async_insert': '1', 'wait_for_async_insert': '0'})
+                                           username=config.db_user, password=config.db_password)
 
 async def save_outgoing(event):
     chat_title = ''
