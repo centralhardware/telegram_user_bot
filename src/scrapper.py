@@ -115,7 +115,6 @@ async def save_incoming(event):
     ])
 
     if len(b) > 50:
-        b = []
         logging.info("save data to clickhouse")
         clickhouse.insert('chats_log', b,
                           ['date_time',
@@ -137,4 +136,5 @@ async def save_incoming(event):
                            'threat',
                            'sexual_explicit',
                            'lang'])
+        b = []
 
