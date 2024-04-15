@@ -26,6 +26,7 @@ class Accumulator:
         logging.info(
             f'Data flushed. Items added {self.total_items_added}. Avg speed: {round(10 / (self.total_items_added if self.total_items_added > 0 else 1), 2)} items/s')
         self.data.clear()
+        self.total_items_added = 0
 
     def get_len(self):
         return len(self.data)
