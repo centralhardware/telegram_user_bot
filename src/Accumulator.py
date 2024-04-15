@@ -6,8 +6,8 @@ class Accumulator:
     MAX_FLUSH_INTERVAL = 40
     MIN_FLUSH_INTERVAL = 10
 
-    def __init__(self, item_limit, external_function):
-        self.item_limit = max(item_limit, 50)
+    def __init__(self, external_function):
+        self.item_limit = 100
         self.data = []
         self.total_items_added = 0
         self.external_function = external_function
