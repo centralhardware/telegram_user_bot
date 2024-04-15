@@ -35,3 +35,6 @@ class Accumulator:
         print(
             f'Data flushed. Time taken: {flush_time}s. New item limit: {self.item_limit}. Avg speed: {(end - self.start_time) / (self.total_items_added if self.total_items_added > 0 else 1)} items/s')
         self.data.clear()
+
+    def get_len(self):
+        return len(self.data)

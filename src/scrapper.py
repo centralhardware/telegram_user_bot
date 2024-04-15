@@ -110,7 +110,7 @@ async def save_incoming(event):
     color = "red" if tox['toxicity'] > 0.5 else "green"
 
     logging.info(
-        f"{len(b):3} {event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+        f"{acc.get_len():3} {event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
