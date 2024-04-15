@@ -67,6 +67,7 @@ detoxify = Detoxify('multilingual')
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
 
 
+buffer = []
 async def save_incoming(event):
     if is_baned(event.chat_id):
         return
@@ -96,7 +97,7 @@ async def save_incoming(event):
     except Exception:
         first_name = None
         last_name = None
-    data = [[
+    buffer.append([
         datetime.now(),
         event.chat.title,
         event.chat_id,
@@ -110,25 +111,29 @@ async def save_incoming(event):
         event.message.reply_to_msg_id,
         *tox.values(),
         lang
-    ]]
-    clickhouse.insert('chats_log', data,
-                      ['date_time',
-                       'chat_title',
-                       'chat_id',
-                       'username',
-                       'chat_usernames',
-                       'first_name',
-                       'second_name',
-                       'user_id',
-                       'message_id',
-                       'message',
-                       'reply_to',
-                       'toxicity',
-                       'severe_toxicity',
-                       'obscene',
-                       'identity_attack',
-                       'insult',
-                       'threat',
-                       'sexual_explicit',
-                       'lang'])
+    ])
+
+    if len(buffer) > 100:
+        buffer = []
+        logging.info("save data to clickhouse")
+        clickhouse.insert('chats_log', buffer,
+                          ['date_time',
+                           'chat_title',
+                           'chat_id',
+                           'username',
+                           'chat_usernames',
+                           'first_name',
+                           'second_name',
+                           'user_id',
+                           'message_id',
+                           'message',
+                           'reply_to',
+                           'toxicity',
+                           'severe_toxicity',
+                           'obscene',
+                           'identity_attack',
+                           'insult',
+                           'threat',
+                           'sexual_explicit',
+                           'lang'])
 
