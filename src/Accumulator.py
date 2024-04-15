@@ -12,7 +12,7 @@ class Accumulator:
         self.total_items_added = 0
         self.external_function = external_function
         self.start_time = time.time()
-        self.flush_interval = self.MAX_FLUSH_INTERVAL
+        self.flush_interval = self.MIN_FLUSH_INTERVAL
         self.next_flush_time = self.start_time + self.flush_interval
 
     def update_flush_interval(self):
@@ -21,7 +21,7 @@ class Accumulator:
             if new_interval != self.flush_interval:
                 logging.info(f'Flush interval updated from {self.flush_interval}s to {new_interval}s')
                 self.flush_interval = new_interval
-        elif len(self.data) < 0.2 * self.item_limit:
+        elif len(self.data) < 0.5 * self.item_limit:
             new_interval = min(self.MAX_FLUSH_INTERVAL, self.flush_interval + 1)
             if new_interval != self.flush_interval:
                 logging.info(f'Flush interval updated from {self.flush_interval}s to {new_interval}s')
