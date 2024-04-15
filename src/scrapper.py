@@ -69,7 +69,6 @@ r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses
 
 
 def save_data(data):
-    logging.info("save data to clickhouse")
     clickhouse.insert('chats_log', data,
                       ['date_time',
                        'chat_title',
