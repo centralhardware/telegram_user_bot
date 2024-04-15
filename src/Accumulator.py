@@ -6,8 +6,8 @@ class Accumulator:
     MAX_FLUSH_INTERVAL = 40
     MIN_FLUSH_INTERVAL = 10
 
-    def __init__(self, external_function):
-        self.item_limit = 100
+    def __init__(self, item_limit, external_function):
+        self.item_limit = max(item_limit, 50)
         self.data = []
         self.total_items_added = 0
         self.external_function = external_function
@@ -17,9 +17,15 @@ class Accumulator:
 
     def update_flush_interval(self):
         if len(self.data) > 0.8 * self.item_limit:
-            self.flush_interval = max(self.MIN_FLUSH_INTERVAL, self.flush_interval - 1)
+            new_interval = max(self.MIN_FLUSH_INTERVAL, self.flush_interval - 1)
+            if new_interval != self.flush_interval:
+                logging.info(f'Flush interval updated from {self.flush_interval}s to {new_interval}s')
+                self.flush_interval = new_interval
         elif len(self.data) < 0.2 * self.item_limit:
-            self.flush_interval = min(self.MAX_FLUSH_INTERVAL, self.flush_interval + 1)
+            new_interval = min(self.MAX_FLUSH_INTERVAL, self.flush_interval + 1)
+            if new_interval != self.flush_interval:
+                logging.info(f'Flush interval updated from {self.flush_interval}s to {new_interval}s')
+                self.flush_interval = new_interval
 
     def add(self, item):
         current_time = time.time()
