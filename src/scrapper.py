@@ -14,12 +14,12 @@ from Accumulator import Accumulator
 
 # Extracted utility function
 def build_usernames_from_chat(chat):
-    chat_usernames = []
+    chat_usernames = {}
     if hasattr(chat, "username") and chat.username is not None:
-        chat_usernames.append(chat.username)
+        chat_usernames.add(chat.username)
     elif hasattr(chat, "usernames") and chat.usernames is not None:
         for u in chat.usernames:
-            chat_usernames.append(u.username)
+            chat_usernames.add(u.username)
     return chat_usernames
 
 
@@ -29,7 +29,6 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
 
 async def save_outgoing(event):
     chat_title = ''
-    chat_id = build_usernames_from_chat(event.chat)
 
     if hasattr(event.chat, "title"):
         chat_title = event.chat.title
@@ -38,8 +37,7 @@ async def save_outgoing(event):
             chat_title = event.chat.first_name
 
     chat = await event.get_chat()
-    chat_id_copy = build_usernames_from_chat(chat)
-    chat_id.extend(chat_id_copy)
+    chat_id = build_usernames_from_chat(chat)
 
     if hasattr(chat, "first_name"):
         last_name = chat.last_name if chat.last_name is not None else ""
