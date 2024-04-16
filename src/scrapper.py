@@ -14,12 +14,12 @@ from Accumulator import Accumulator
 
 # Extracted utility function
 def build_usernames_from_chat(chat):
-    chat_usernames = {}
+    chat_usernames = []
     if hasattr(chat, "username") and chat.username is not None:
-        chat_usernames.add(chat.username)
+        chat_usernames.append(chat.username)
     elif hasattr(chat, "usernames") and chat.usernames is not None:
         for u in chat.usernames:
-            chat_usernames.add(u.username)
+            chat_usernames.append(u.username)
     return chat_usernames
 
 
