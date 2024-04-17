@@ -14,7 +14,7 @@ class Accumulator:
 
     def add(self, item):
         current_time = time.time()
-        if current_time >= self.next_flush_time or len(self.data) >= self.ITEM_LIMIT:
+        if current_time >= self.next_flush_time or self.len() >= self.ITEM_LIMIT:
             self.flush()
             self.start_time = current_time
             self.next_flush_time = self.start_time + self.FLUSH_INTERVAL
@@ -27,10 +27,10 @@ class Accumulator:
         self.external_function(self.data)
         logging.info(
             '\n' +
-            f'Data flushed. Items added {self.get_len}. Flush time: {round(flush_duration, 2)}. Avg speed: {round(self.get_len / flush_duration, 2)} items/s' +
+            f'Data flushed. Items added {self.len()}. Flush time: {round(flush_duration, 2)}. Avg speed: {round(self.len() / flush_duration, 2)} items/s' +
             '\n'
         )
         self.data.clear()
 
-    def get_len(self):
+    def len(self) -> int:
         return len(self.data) + 1
