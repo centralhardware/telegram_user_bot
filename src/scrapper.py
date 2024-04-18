@@ -93,6 +93,7 @@ acc = Accumulator(save_data)
 
 
 async def save_incoming(event):
+    global b
     if is_baned(event.chat_id):
         return
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
@@ -104,17 +105,9 @@ async def save_incoming(event):
 
     toxicity = "toxic    " if tox['toxicity'] > 0.5 else "non toxic"
     color = "red" if tox['toxicity'] > 0.5 else "green"
-    if event.raw_text != '':
-        text = event.raw_text
-    elif event.sticker is not None:
-        text = f"sticker:{event.sticker.emoji}"
-    else:
-        logging.info(f"{event.message.id:12,} {event.chat.title[:20]:<25s} no text message")
-        return
-
 
     logging.info(
-        f"{acc.len():3} {event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {text} reply to {event.message.reply_to_msg_id}")
+        f"{acc.len():3} {event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -140,7 +133,7 @@ async def save_incoming(event):
         last_name,
         event.message.sender.id,
         event.message.id,
-        text,
+        event.raw_text,
         event.message.reply_to_msg_id,
         *tox.values(),
         lang
