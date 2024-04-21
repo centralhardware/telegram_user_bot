@@ -4,7 +4,6 @@ import time
 
 class Accumulator:
     FLUSH_INTERVAL = 20
-    ITEM_LIMIT = 100
 
     def __init__(self, external_function):
         self.data = []
@@ -14,7 +13,7 @@ class Accumulator:
 
     def add(self, item):
         current_time = time.time()
-        if current_time >= self.next_flush_time or self.len() >= self.ITEM_LIMIT:
+        if current_time >= self.next_flush_time:
             self.flush()
             self.start_time = current_time
             self.next_flush_time = self.start_time + self.FLUSH_INTERVAL
