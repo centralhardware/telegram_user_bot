@@ -1,11 +1,10 @@
-FROM python:3.9
+FROM pytorch
 
 WORKDIR /app
 
 COPY requirements.txt .
 
 RUN pip install -r requirements.txt
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 COPY src/ .
 
