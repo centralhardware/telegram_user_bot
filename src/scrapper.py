@@ -66,7 +66,7 @@ detoxify = Detoxify('multilingual')
 r = redis.Redis(host=config.redis_host, port=config.redis_port, decode_responses=True)
 
 
-def save_data(data):
+def save_outgoing(data):
     clickhouse.insert('chats_log', data,
                       ['date_time',
                        'chat_title',
@@ -89,8 +89,14 @@ def save_data(data):
                        'lang'])
 
 
-acc = Accumulator(save_data)
+def save_deleted(data):
+    clickhouse.insert('deleted_log',
+                      data,
+                      ['date_time', 'chat_id', 'message_id'])
 
+
+acc_out = Accumulator(save_outgoing)
+acc_del = Accumulator(save_deleted)
 
 async def save_incoming(event):
     if is_baned(event.chat_id):
@@ -107,7 +113,7 @@ async def save_incoming(event):
 
     text = event.raw_text.split('\n')[0]
     logging.info(
-        f"{acc.len():3} {event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {text} reply to {event.message.reply_to_msg_id}")
+        f"{acc_out.len():3} {event.message.id:12,} {colored(toxicity, color)} {event.chat.title[:20]:<25s} {text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -123,7 +129,7 @@ async def save_incoming(event):
         first_name = None
         last_name = None
 
-    acc.add([
+    acc_out.add([
         datetime.now(),
         event.chat.title,
         event.chat_id,
@@ -144,7 +150,5 @@ async def save_deleted(event):
     if event.chat_id is None: return
 
     for msg_id in event.deleted_ids:
-        logging.info(f"Deleted {event.chat_id} {msg_id}")
-        clickhouse.insert('deleted_log',
-                          [[datetime.now(), event.chat_id, msg_id]],
-                          ['date_time', 'chat_id', 'message_id'])
+        logging.info(f"{acc_del.len():3} Deleted {event.chat_id} {msg_id}")
+        acc_del.add([datetime.now(), event.chat_id, msg_id])
