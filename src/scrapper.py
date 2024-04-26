@@ -93,7 +93,6 @@ acc = Accumulator(save_data)
 
 
 async def save_incoming(event):
-    global b
     if is_baned(event.chat_id):
         return
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
@@ -139,3 +138,13 @@ async def save_incoming(event):
         *tox.values(),
         lang
     ])
+
+
+async def save_deleted(event):
+    if event.chat_id is None: return
+
+    for msg_id in event.deleted_ids:
+        logging.info(f"Deleted {event.chat_id} {msg_id}")
+        clickhouse.insert('deleted_log',
+                          [[datetime.now(), event.chat_id, msg_id]],
+                          ['date_time', 'chat_id', 'message_id'])

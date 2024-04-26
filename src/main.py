@@ -8,7 +8,7 @@ from telethon import events
 from ban_utils import ban
 from notify_admins import notify_admins
 from read_acknowledge_utils import read_acknowledge
-from scrapper import save_outgoing, save_incoming
+from scrapper import save_outgoing, save_incoming, save_deleted
 
 
 def create_telegram_client(session_name, phone):
@@ -22,10 +22,12 @@ client2 = create_telegram_client('session/alex2', config.telephone2)
 client = create_telegram_client('session/alex', config.telephone)
 
 client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
+client.add_event_handler(save_deleted, events.MessageDeleted())
 client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
 client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
 
 client2.add_event_handler(save_incoming, events.NewMessage(incoming=True))
+client2.add_event_handler(save_deleted, events.MessageDeleted())
 client2.add_event_handler(read_acknowledge, events.NewMessage(outgoing=True, pattern='!r', forwards=False))
 client2.add_event_handler(ban, events.NewMessage(outgoing=True, pattern='!ban', forwards=False))
 
