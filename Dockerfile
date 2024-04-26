@@ -1,4 +1,4 @@
-FROM pytorch
+FROM pytorch/pytorch
 
 WORKDIR /app
 
