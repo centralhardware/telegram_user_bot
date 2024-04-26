@@ -95,8 +95,9 @@ def save_deleted(data):
                       ['date_time', 'chat_id', 'message_id'])
 
 
-acc_out = Accumulator(save_outgoing)
-acc_del = Accumulator(save_deleted)
+acc_out = Accumulator(save_outgoing, 'outgoing')
+acc_del = Accumulator(save_deleted, 'deleted')
+
 
 async def save_incoming(event):
     if is_baned(event.chat_id):

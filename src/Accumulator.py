@@ -5,7 +5,8 @@ import time
 class Accumulator:
     FLUSH_INTERVAL = 20
 
-    def __init__(self, external_function):
+    def __init__(self, external_function, name):
+        self.name = name
         self.data = []
         self.external_function = external_function
         self.start_time = time.time()
@@ -26,7 +27,7 @@ class Accumulator:
         self.external_function(self.data)
         logging.info(
             '\n' +
-            f'Data flushed. Items added {self.len()}. Flush time: {round(flush_duration, 2)}. Avg speed: {round(self.len() / flush_duration, 2)} items/s' +
+            f'{self.name} flushed. Items added {self.len()}. Flush time: {round(flush_duration, 2)}. Avg speed: {round(self.len() / flush_duration, 2)} items/s' +
             '\n'
         )
         self.data.clear()
