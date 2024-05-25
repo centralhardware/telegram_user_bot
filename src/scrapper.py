@@ -5,7 +5,7 @@ import redis
 from detoxify import Detoxify
 from lingua import LanguageDetectorBuilder, Language
 import logging
-from admin_utils import get_admins, get_participant_count
+from admin_utils import get_admins
 from config import config
 from termcolor import colored
 
@@ -45,11 +45,10 @@ async def save_outgoing(event):
 
     if chat_title == '':
         chat_title = chat_id[0]
-    admins = await get_admins(event.chat, event.client)
-    participant_count = await get_participant_count(event.chat, event.client)
+    t = await get_admins(event.chat, event.client)
     if event.raw_text != '':
-        logging.info(f"outcoming {chat_title}: {event.raw_text} {participant_count} {admins}")
-        data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, participant_count, admins]]
+        logging.info(f"outcoming {chat_title}: {event.raw_text} {t[1]} {t[0]}")
+        data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, t[1], t[0]]]
         clickhouse.insert('telegram_messages_new', data,
                           ['date_time', 'message', 'title', 'usernames', 'id', 'members_count', 'admins2'])
     else:
