@@ -45,7 +45,7 @@ async def save_outgoing(event):
 
     if chat_title == '':
         chat_title = chat_id[0]
-    admins = await get_admins(event.chat, event.client)
+    admins = await get_admins(event.chat, event.client, 100)
     participant_count = await get_participant_count(event.chat, event.client)
     if event.raw_text != '':
         logging.info(f"outcoming {chat_title}: {event.raw_text} {participant_count} {admins}")
