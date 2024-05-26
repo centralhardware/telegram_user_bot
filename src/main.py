@@ -1,14 +1,13 @@
+import logging
+
+from aiohttp import web
+from telethon import events
 from telethon.sync import TelegramClient
 
 from config import config
-from web import MessageSender
-import logging
-from aiohttp import web
-from telethon import events
-from ban_utils import ban
 from notify_admins import notify_admins
-from read_acknowledge_utils import read_acknowledge
 from scrapper import save_outgoing, save_incoming, save_deleted
+from web import MessageSender
 
 
 def create_telegram_client(session_name, phone):
@@ -18,18 +17,12 @@ def create_telegram_client(session_name, phone):
     return c
 
 
-client2 = create_telegram_client('session/alex2', config.telephone2)
 client = create_telegram_client('session/alex', config.telephone)
 
 client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
 client.add_event_handler(save_deleted, events.MessageDeleted())
 client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
 client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
-
-client2.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-client2.add_event_handler(save_deleted, events.MessageDeleted())
-client2.add_event_handler(read_acknowledge, events.NewMessage(outgoing=True, pattern='!r', forwards=False))
-client2.add_event_handler(ban, events.NewMessage(outgoing=True, pattern='!ban', forwards=False))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -41,4 +34,3 @@ if __name__ == '__main__':
     web.run_app(app, port=8080, loop=client.loop)
 
     client.disconnect()
-    client2.disconnect()
