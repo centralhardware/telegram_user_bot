@@ -3,7 +3,6 @@ from datetime import datetime
 
 import clickhouse_connect
 
-from Accumulator import Accumulator
 from admin_utils import get_admins
 from config import config
 
@@ -72,16 +71,12 @@ def save_del(data):
                       ['date_time', 'chat_id', 'message_id'])
 
 
-acc_inc = Accumulator(save_inc, 'incoming')
-acc_del = Accumulator(save_del, 'deleted')
-
-
 async def save_incoming(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
     text = event.raw_text.split('\n')[0]
     logging.info(
-        f"incoming {acc_inc.len():3} {event.message.id:12,} {event.chat.title[:20]:<25s} {text} reply to {event.message.reply_to_msg_id}")
+        f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {text} reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
@@ -97,7 +92,7 @@ async def save_incoming(event):
         first_name = None
         last_name = None
 
-    acc_inc.add([
+    save_inc([[
         datetime.now(),
         event.chat.title,
         event.chat_id,
@@ -109,12 +104,12 @@ async def save_incoming(event):
         event.message.id,
         event.raw_text,
         event.message.reply_to_msg_id
-    ])
+    ]])
 
 
 async def save_deleted(event):
     if event.chat_id is None: return
 
     for msg_id in event.deleted_ids:
-        logging.info(f"{acc_del.len():3} Deleted {event.chat_id} {msg_id}")
-        acc_del.add([datetime.now(), event.chat_id, msg_id])
+        logging.info(f" Deleted {event.chat_id} {msg_id}")
+        save_del([[datetime.now(), event.chat_id, msg_id]])
