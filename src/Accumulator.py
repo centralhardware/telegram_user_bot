@@ -3,21 +3,17 @@ import time
 
 
 class Accumulator:
-    FLUSH_INTERVAL = 20
-
     def __init__(self, external_function, name):
         self.name = name
         self.data = []
         self.external_function = external_function
         self.start_time = time.time()
-        self.next_flush_time = self.start_time + self.FLUSH_INTERVAL
 
     def add(self, item):
         current_time = time.time()
-        if current_time >= self.next_flush_time:
+        if len(self.data) == 10:
             self.flush()
             self.start_time = current_time
-            self.next_flush_time = self.start_time + self.FLUSH_INTERVAL
         else:
             self.data.append(item)
 
