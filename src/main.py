@@ -25,6 +25,7 @@ client.add_event_handler(save_deleted, events.MessageDeleted())
 client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
 client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
 client.add_event_handler(top, events.NewMessage(outgoing=True, pattern='!top', forwards=False, chats=[-1001633660171]))
+client.add_event_handler(top, events.NewMessage(incoming=True, pattern='!top', forwards=False, chats=[-1001633660171]))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
