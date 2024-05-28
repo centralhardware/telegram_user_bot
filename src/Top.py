@@ -31,5 +31,4 @@ async def top(event):
             username = user.usernames[0].username
 
         msg = msg + f"{res.result_rows.index(row) + 1}: {username} - {row[1]}\n"
-
-    await event.client.send_message(event.chat, msg)
+        await event.client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
