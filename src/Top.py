@@ -12,7 +12,7 @@ async def top(event):
     res = clickhouse.query("""
             select any(user_id), count(*) as count
             from chats_log
-            where chat_id=-1001633660171 and has(tokens(message), %(word)s)
+            where chat_id=-1001633660171 and has(tokens(lowerUTF8(message)), %(word)s)
             group by user_id
             order by count(*) desc
             limit 10
