@@ -45,33 +45,31 @@ async def save_outgoing(event):
     if event.raw_text != '':
         logging.info(f"outcoming {chat_title}: {event.raw_text} {t[1]} {t[0]}")
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, t[1], t[0]]]
-        # clickhouse.insert('telegram_messages_new', data,
-        #                   ['date_time', 'message', 'title', 'usernames', 'id', 'members_count', 'admins2'])
+        clickhouse.insert('telegram_messages_new', data,
+                          ['date_time', 'message', 'title', 'usernames', 'id', 'members_count', 'admins2'])
     else:
         logging.info("ignore empty message")
 
 
 def save_inc(data):
-    pass
-    # clickhouse.insert('chats_log', data,
-    #                   ['date_time',
-    #                    'chat_title',
-    #                    'chat_id',
-    #                    'username',
-    #                    'chat_usernames',
-    #                    'first_name',
-    #                    'second_name',
-    #                    'user_id',
-    #                    'message_id',
-    #                    'message',
-    #                    'reply_to'])
+    clickhouse.insert('chats_log', data,
+                      ['date_time',
+                       'chat_title',
+                       'chat_id',
+                       'username',
+                       'chat_usernames',
+                       'first_name',
+                       'second_name',
+                       'user_id',
+                       'message_id',
+                       'message',
+                       'reply_to'])
 
 
 def save_del(data):
-    pass
-    # clickhouse.insert('deleted_log',
-    #                   data,
-    #                   ['date_time', 'chat_id', 'message_id'])
+    clickhouse.insert('deleted_log',
+                      data,
+                      ['date_time', 'chat_id', 'message_id'])
 
 
 async def save_incoming(event):
