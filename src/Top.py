@@ -23,7 +23,7 @@ async def top(event):
     """, {"word": word})
     msg = ""
     for row in res.result_rows:
-        if row[1] == 0: pass
+        if row[1] == 0: continue
         user = await event.client.get_entity(row[0])
         if user.usernames is None:
             username = user.username
