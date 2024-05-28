@@ -18,7 +18,7 @@ async def top(event):
                 UNION ALL
                 select 428985392, count(*) as count
                 from telegram_messages_new
-                where id=-1001633660171 and has(tokens(lowerUTF8(message)), %(word)s) and startsWith(message, '!top ') 
+                where id=-1001633660171 and has(tokens(lowerUTF8(message)), %(word)s) and startsWith(message, '!top '))
             order by count desc 
     """, {"word": word})
     msg = ""
