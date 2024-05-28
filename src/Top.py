@@ -12,13 +12,13 @@ async def top(event):
             select *
             from (select any(user_id), count(*) as count
                 from chats_log
-                where chat_id=-1001633660171 and has(tokens(lowerUTF8(message)), 'список')
+                where chat_id=-1001633660171 and has(tokens(lowerUTF8(message)), %(word)s)
                 group by user_id
                 limit 10
                 UNION ALL
                 select 428985392, count(*) as count
                 from telegram_messages_new
-                where id=-1001633660171 and has(tokens(lowerUTF8(message)), 'список'))
+                where id=-1001633660171 and has(tokens(lowerUTF8(message)), %(word)s))
             order by count desc 
     """, {"word": word})
     msg = ""
