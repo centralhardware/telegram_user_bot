@@ -23,12 +23,13 @@ async def top(event):
     """, {"word": word})
     msg = ""
     for row in res.result_rows:
+        if row[1] == 0: pass
         user = await event.client.get_entity(row[0])
         if user.usernames is None:
             username = user.username
         else:
             username = user.usernames[0].username
 
-        msg = msg + f"{res.result_rows.index(row)+1}: {username} - {row[1]}\n"
+        msg = msg + f"{res.result_rows.index(row) + 1}: {username} - {row[1]}\n"
 
     await event.client.send_message(event.chat, msg)
