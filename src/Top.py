@@ -6,16 +6,20 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
                                            username=config.db_user, password=config.db_password)
 
 
-
 async def top(event):
     word = event.raw_text.split(" ")[1]
     res = clickhouse.query("""
-            select any(user_id), count(*) as count
-            from chats_log
-            where chat_id=-1001633660171 and has(tokens(lowerUTF8(message)), lowerUTF8(%(word)s))
-            group by user_id
-            order by count(*) desc
-            limit 10
+            select *
+            from (select any(user_id), count(*) as count
+                from chats_log
+                where chat_id=-1001633660171 and has(tokens(lowerUTF8(message)), 'список')
+                group by user_id
+                limit 10
+                UNION ALL
+                select 428985392, count(*) as count
+                from telegram_messages_new
+                where id=-1001633660171 and has(tokens(lowerUTF8(message)), 'список'))
+            order by count desc 
     """, {"word": word})
     msg = ""
     for row in res.result_rows:
@@ -28,6 +32,3 @@ async def top(event):
         msg = msg + f"{res.result_rows.index(row)}: {username} - {row[1]}\n"
 
     await event.client.send_message(event.chat, msg)
-
-
-
