@@ -29,6 +29,6 @@ async def top(event):
         else:
             username = user.usernames[0].username
 
-        msg = msg + f"{res.result_rows.index(row)}: {username} - {row[1]}\n"
+        msg = msg + f"{res.result_rows.index(row)+1}: {username} - {row[1]}\n"
 
     await event.client.send_message(event.chat, msg)
