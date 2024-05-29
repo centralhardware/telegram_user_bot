@@ -20,6 +20,7 @@ async def top(event):
                 from telegram_messages_new
                 where id=-1001633660171 and has(tokens(lowerUTF8(message)), lowerUTF8(%(word)s)) and startsWith(message, '!top '))
             order by count desc 
+            limit 10
     """, {"word": word})
     msg = ""
     for row in res.result_rows:
