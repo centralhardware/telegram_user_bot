@@ -15,6 +15,7 @@ async def deleted(event):
         where chat_id=-1001633660171
         group by user_id
         order by count(user_id) desc
+        limit 10
         """
     )
     msg = ""
@@ -24,6 +25,6 @@ async def deleted(event):
             username = user.username
         else:
             username = user.usernames[0].username
-        msg = msg + f"${res.result_rows.index(row) + 1} : {user.first_name} {user.last_name} {username} - {row[1]}\n"
+        msg = msg + f"{res.result_rows.index(row) + 1} : {user.first_name} {user.last_name} {username} - {row[1]}\n"
 
     await event.client.send_message(event.chat, msg, reply_to=event.message.id)
