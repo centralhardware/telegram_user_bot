@@ -118,5 +118,5 @@ async def save_deleted(event):
         LIMIT 1
         """, {'id': event.chat_id})
     for msg_id in event.deleted_ids:
-        logging.info(f" Deleted {res[0][0]} {msg_id}")
+        logging.info(f" Deleted {res.result_rows[0][0]} {msg_id}")
         save_del([[datetime.now(), event.chat_id, msg_id]])
