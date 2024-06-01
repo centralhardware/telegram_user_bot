@@ -110,6 +110,13 @@ async def save_incoming(event):
 async def save_deleted(event):
     if event.chat_id is None: return
 
+    res = clickhouse.query("""
+        SELECT chat_title
+        FROM chats_log
+        WHERE chat_id = {id:Int64}
+        ORDER BY date_time
+        LIMIT 1
+        """, {'id': event.chat_id})
     for msg_id in event.deleted_ids:
-        logging.info(f" Deleted {event.chat_id} {msg_id}")
+        logging.info(f" Deleted {res[0][0]} {msg_id}")
         save_del([[datetime.now(), event.chat_id, msg_id]])
