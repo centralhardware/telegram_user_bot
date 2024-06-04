@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 
 import clickhouse_connect
+from termcolor import colored
 
 from admin_utils import get_admins
 from config import config
@@ -111,12 +112,12 @@ async def save_deleted(event):
     if event.chat_id is None: return
 
     res = clickhouse.query("""
-        SELECT chat_title
+        SELECT chat_title, message
         FROM chats_log
         WHERE chat_id = {id:Int64}
         ORDER BY date_time
         LIMIT 1
         """, {'id': event.chat_id})
     for msg_id in event.deleted_ids:
-        logging.info(f" Deleted {res.result_rows[0][0]} {msg_id}")
+        logging.info(colored(f" Deleted {res.result_rows[0][0]} {msg_id} {res.result_rows[0][1]}", 'red'))
         save_del([[datetime.now(), event.chat_id, msg_id]])
