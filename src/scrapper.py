@@ -118,4 +118,4 @@ async def save_deleted(event):
             FROM chats_log
             WHERE chat_id = {chat_id:Int64} and message_id = {message_id:Int64}
         """, {'chat_id': event.chat_id, 'message_id': msg_id})
-        logging.info(colored(f" Deleted {res.result_rows[0][0]} {msg_id} {res.result_rows[0][1]}", 'red'))
+        logging.info(colored(f" Deleted {res.result_rows[0][0]} {msg_id} {res.result_rows[0][1]}", 'yellow'))
