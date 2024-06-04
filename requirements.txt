@@ -3,3 +3,4 @@ aiohttp~=3.9.4
 clickhouse_connect~=0.7.0
 lingua-language-detector~=2.0.2
 pymodbus
+termcolor~=2.4.0
