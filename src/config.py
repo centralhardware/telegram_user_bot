@@ -10,6 +10,7 @@ class Config:
         self.db_password = os.getenv("DB_PASSWORD")
         self.db_host = os.getenv("DB_HOST")
         self.db_database = os.getenv("DB_DATABASE")
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 
 config = Config()
