@@ -10,7 +10,7 @@ model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
 
 async def answer(event):
     query = event.raw_text.replace('!ai', '')
-    response = model.generate_content(f"ответь на языке вопроса коротко максимально аргументировано на следующее сообщение: {query}")
+    response = model.generate_content(f"ответь на языке вопроса максимально аргументировано на следующее сообщение ответь одним сообщением без уточняющих вопросов: {query}")
     logging.info(f"ask ai {query} answer {response.text}")
     if event.message.reply_to_msg_id is not None:
         await event.client.send_message(event.chat, response.text + '\n\n gemini AI', reply_to=event.message.reply_to_msg_id)
