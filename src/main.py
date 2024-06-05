@@ -21,7 +21,6 @@ def create_telegram_client(session_name, phone):
 
 
 client = create_telegram_client('session/alex', config.telephone)
-client2 = create_telegram_client('session/alex2', config.telephone2)
 
 client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
 client.add_event_handler(save_deleted, events.MessageDeleted())

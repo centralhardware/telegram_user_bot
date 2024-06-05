@@ -1,10 +1,11 @@
 import clickhouse_connect
 
 from config import config
-from main import client2
+from main import create_telegram_client
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password)
+client2 = create_telegram_client('session/alex2', config.telephone2)
 
 
 async def deleted(event):
