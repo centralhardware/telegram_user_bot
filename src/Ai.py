@@ -3,10 +3,9 @@ import logging
 import google.generativeai as genai
 
 from config import config
-from TelegramUtils import create_telegram_client
+from TelegramUtils import client2
 
 genai.configure(api_key=config.gemini_api_key)
-client2 = create_telegram_client('session/alex2', config.telephone2)
 
 async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
