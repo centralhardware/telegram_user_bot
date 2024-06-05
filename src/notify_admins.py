@@ -16,7 +16,7 @@ def _get_admin_message(admins_list, notify_count):
 
 async def notify_admins(event):
     notify_count = _get_notify_count(event.raw_text)
-    admins_list, _ = await get_admins(event.chat, event.client)
+    admins_list, _ = await get_admins(event.chat, event.client, notify_count)
 
     if admins_list:
         logging.info(f"Notify {notify_count} admins in {event.chat.title} ({admins_list})")
