@@ -9,7 +9,7 @@ from scrapper import save_outgoing, save_incoming, save_deleted
 from Top import top
 from Deleted import deleted
 from Ai import answer
-from src.TelegramUtils import create_telegram_client
+from TelegramUtils import create_telegram_client
 from web import MessageSender
 
 
