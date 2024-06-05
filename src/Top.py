@@ -26,12 +26,17 @@ async def top(event):
     msg = ""
     for row in res.result_rows:
         if row[1] == 0: continue
-        user = await event.client.get_entity(row[0])
-        if user.usernames is None:
-            username = user.username
-        else:
-            username = user.usernames[0].username
+        try:
+            user = await event.client.get_entity(row[0])
+            if user.usernames is None:
+                username = user.username
+            else:
+                username = user.usernames[0].username
+            first_name = user.first_name
+            last_name = user.last_name
+        except Exception:
+            username = row[0]
 
-        msg = msg + f"{res.result_rows.index(row) + 1}: {user.first_name} {user.last_name} {username} - {row[1]}\n"
+        msg = msg + f"{res.result_rows.index(row) + 1}: {first_name} {last_name} {username} - {row[1]}\n"
 
     await client2.send_message(event.chat, msg, reply_to=event.message.id)
