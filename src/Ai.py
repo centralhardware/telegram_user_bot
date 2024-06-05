@@ -3,7 +3,7 @@ import logging
 import google.generativeai as genai
 
 from config import config
-from main import create_telegram_client
+from TelegramUtils import create_telegram_client
 
 genai.configure(api_key=config.gemini_api_key)
 client2 = create_telegram_client('session/alex2', config.telephone2)

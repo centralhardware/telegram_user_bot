@@ -1,7 +1,7 @@
 import clickhouse_connect
 
 from config import config
-from main import create_telegram_client
+from TelegramUtils import create_telegram_client
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password)

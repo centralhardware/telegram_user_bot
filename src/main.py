@@ -2,7 +2,6 @@ import logging
 
 from aiohttp import web
 from telethon import events
-from telethon.sync import TelegramClient
 
 from config import config
 from notify_admins import notify_admins
@@ -10,14 +9,8 @@ from scrapper import save_outgoing, save_incoming, save_deleted
 from Top import top
 from Deleted import deleted
 from Ai import answer
+from src.TelegramUtils import create_telegram_client
 from web import MessageSender
-
-
-def create_telegram_client(session_name, phone):
-    c = TelegramClient(session_name, config.api_id, config.api_hash)
-    c.connect()
-    c.start(phone=phone)
-    return c
 
 
 client = create_telegram_client('session/alex', config.telephone)
