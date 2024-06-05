@@ -31,6 +31,8 @@ async def deleted(event):
             last_name = user.last_name
         except Exception:
             username = row[0]
+            first_name=''
+            last_name=''
 
         msg = msg + f"{res.result_rows.index(row) + 1} : {first_name} {last_name} {username} - {row[1]}\n"
 
