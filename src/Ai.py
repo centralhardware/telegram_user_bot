@@ -5,7 +5,7 @@ import google.generativeai as genai
 from config import config
 
 genai.configure(api_key=config.gemini_api_key)
-model = genai.GenerativeModel(model_name='gemini-1.0-pro-latest')
+model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
 
 
 async def answer(event):
