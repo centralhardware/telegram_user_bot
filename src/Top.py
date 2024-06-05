@@ -1,6 +1,7 @@
 import clickhouse_connect
 
 from config import config
+from main import client2
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password)
@@ -33,4 +34,4 @@ async def top(event):
 
         msg = msg + f"{res.result_rows.index(row) + 1}: {user.first_name} {user.last_name} {username} - {row[1]}\n"
 
-    await event.client.send_message(event.chat, msg, reply_to=event.message.id)
+    await client2.send_message(event.chat, msg, reply_to=event.message.id)
