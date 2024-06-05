@@ -34,4 +34,4 @@ async def deleted(event):
 
         msg = msg + f"{res.result_rows.index(row) + 1} : {first_name} {last_name} {username} - {row[1]}\n"
 
-    await client2.send_message(event.chat, msg, reply_to=event.message.id)
+    await client2.send_message(event.chat.id, msg, reply_to=event.message.id)
