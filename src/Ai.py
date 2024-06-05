@@ -9,7 +9,7 @@ model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 
 
 async def answer(event):
-    query = event.raw_text.split(':')[1]
+    query = event.raw_text.replace('!ai', '')
     response = model.generate_content(f"ответь на языке вопроса коротко максимально аргументировано на следующее сообщение, добавиь в конце ремарку какой версией AI это сообщение сгенерировано: {query}")
     logging.info(f"ask ai {query} answer {response.text}")
     if event.message.reply_to_msg_id is not None:
