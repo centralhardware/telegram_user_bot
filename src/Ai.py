@@ -8,11 +8,11 @@ from TelegramUtils import client2
 genai.configure(api_key=config.gemini_api_key)
 
 async def answerPublic(event):
-    answer(event, False)
+    await answer(event, False)
 
 
 async def anserPrivate(event):
-    answer(event, True)
+    await answer(event, True)
 
 
 async def answer(event, is_private):
