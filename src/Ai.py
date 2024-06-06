@@ -12,7 +12,7 @@ async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
     query = event.raw_text.replace('!ai', '')
     response = model.generate_content(
-        f"ты лаконичный ассистент, который отвечает точно. Используй kotlin код, если нужен код: {query}")
+        f"ты лаконичный ассистент, который отвечает точно: {query}")
     logging.info(f"ask ai {query} answer {response.text}")
     if event.chat_id == -1001633660171:
         if event.message.reply_to_msg_id is not None:
