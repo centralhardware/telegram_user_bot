@@ -119,7 +119,7 @@ async def save_deleted(event):
             SELECT chat_title
             FROM chats_log
             WHERE chat_id = {chat_id:Int64}
-            """, {'chat_id': event.chat_id).result_rows[0][0]
+            """, {'chat_id': event.chat_id}).result_rows[0][0]
         except Exception:
             chat_title = event.chat_id
 
