@@ -113,12 +113,23 @@ async def save_deleted(event):
 
     for msg_id in event.deleted_ids:
         save_del([[datetime.now(), event.chat_id, msg_id]])
+
         try:
-            res = clickhouse.query("""
-            SELECT chat_title, message
+            chat_title = clickhouse.query("""
+            SELECT chat_title
+            FROM chats_log
+            WHERE chat_id = {chat_id:Int64}
+            """, {'chat_id': event.chat_id).result_rows[0][0]
+        except Exception:
+            chat_title = event.chat_id
+
+        try:
+            message = clickhouse.query("""
+            SELECT message
             FROM chats_log
             WHERE chat_id = {chat_id:Int64} and message_id = {message_id:Int64}
-            """, {'chat_id': event.chat_id, 'message_id': msg_id})
-            logging.info(colored(f" Deleted {res.result_rows[0][0]} {msg_id} {res.result_rows[0][1]}", 'yellow'))
+            """, {'chat_id': event.chat_id, 'message_id': msg_id}).result_rows[0][0]
         except Exception:
-            logging.info(colored(f" Deleted {event.chat_id} {msg_id}", 'yellow'))
+            message = msg_id
+
+        logging.info(colored(f" Deleted {chat_title} {message}", 'yellow'))
