@@ -87,8 +87,8 @@ async def save_incoming(event):
         first_name = event.message.sender.first_name
         last_name = event.message.sender.last_name
     except Exception:
-        first_name = ''
-        last_name = ''
+        first_name = None
+        last_name = None
 
 
     logging.info(
