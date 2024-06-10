@@ -76,6 +76,9 @@ def save_del(data):
 async def save_incoming(event):
     if event.chat_id >= 0 or event.is_private is True or event.raw_text == '' or event.message.sender is None: return
 
+    logging.info(
+        f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+
     usernames = []
     if event.message.sender.username is not None:
         usernames.append(event.message.sender.username)
@@ -89,10 +92,6 @@ async def save_incoming(event):
     except Exception:
         first_name = None
         last_name = None
-
-
-    logging.info(
-        f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {first_name[:10]:<10s} {last_name[:10]:<10s}  {event.raw_text} reply to {event.message.reply_to_msg_id}")
 
     save_inc([[
         datetime.now(),
