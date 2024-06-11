@@ -1,4 +1,5 @@
 import logging
+import textwrap
 
 import google.generativeai as genai
 
@@ -13,12 +14,16 @@ async def answer(event):
     query = event.raw_text.replace('!ai', '')
     response = model.generate_content(
         f"ты лаконичный ассистент, который отвечает точно: {query}")
+    res = textwrap.wrap(response.text, 4096, break_long_words=True)
     logging.info(f"ask ai {query} answer {response.text}")
     if event.chat_id == -1001633660171:
         if event.message.reply_to_msg_id is not None:
-            await client2.send_message(event.chat.id, response.text + '\n\n gemini AI',
-                               reply_to=event.message.reply_to_msg_id)
+            for line in res:
+                await client2.send_message(event.chat.id, line + '\n\n gemini AI',
+                                           reply_to=event.message.reply_to_msg_id)
         else:
-            await client2.send_message(event.chat.id, response.text + '\n\n gemini AI', reply_to=event.message.id)
+            for line in res:
+                await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
     else:
-        await event.client.edit_message(event.message, response.text + '\n\n gemini AI')
+        for line in res:
+            await event.client.edit_message(event.message, line + '\n\n gemini AI')
