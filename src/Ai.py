@@ -18,15 +18,15 @@ async def answer(event):
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
     except BaseException:
         try:
-            await client2.send_message(event.chat_id, response.prompt_feedback, reply_to=event.message.id)
+            await client2.send_message(event.chat_id, response.prompt_feedback.block_reason.name, reply_to=event.message.id)
         except BaseException:
             pass
         try:
-            await client2.send_message(event.chat_id, response.candidates[0].finish_reason, reply_to=event.message.id)
+            await client2.send_message(event.chat_id, response.candidates[0].finish_reason.name, reply_to=event.message.id)
         except BaseException:
             pass
         try:
-            await client2.send_message(event.chat_id, response.candidates[0].safety_ratings, reply_to=event.message.id)
+            await client2.send_message(event.chat_id, response.candidates[0].safety_ratings[0].category.name, reply_to=event.message.id)
         except BaseException:
             pass
         return
