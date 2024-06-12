@@ -30,7 +30,7 @@ async def answer(event):
                         f"probability: {s_r.probability}\n}}"
                     )
                 ratings_lines.append("\n".join(lines))
-            await client2.send_message(event.chat_id, ratings_lines, reply_to=event.message.id)
+            await client2.send_message(event.chat_id, "\n----\n".join(ratings_lines), reply_to=event.message.id)
         except BaseException:
             pass
         return
