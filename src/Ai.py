@@ -18,7 +18,19 @@ async def answer(event):
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
     except BaseException:
         try:
-            await client2.send_message(event.chat_id, str(response.candidates), reply_to=event.message.id)
+            ratings_lines = []
+            for candidate in response.candidates:
+                lines = []
+                lines.append(f"index: {candidate.index}")
+                lines.append(f"finish_reason: {candidate.finish_reason}")
+                for s_r in candidate.safety_ratings:
+                    lines.append(
+                        f"safety_ratings {{\n  "
+                        f"category: {s_r.category}\n  "
+                        f"probability: {s_r.probability}\n}}"
+                    )
+                ratings_lines.append("\n".join(lines))
+            await client2.send_message(event.chat_id, ratings_lines, reply_to=event.message.id)
         except BaseException:
             pass
         return
