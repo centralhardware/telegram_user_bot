@@ -22,12 +22,12 @@ async def answer(event):
             for candidate in response.candidates:
                 lines = []
                 lines.append(f"index: {candidate.index}")
-                lines.append(f"finish_reason: {candidate.finish_reason}")
+                lines.append(f"finish_reason: {candidate.finish_reason.name}")
                 for s_r in candidate.safety_ratings:
                     lines.append(
                         f"safety_ratings {{\n  "
-                        f"category: {s_r.category}\n  "
-                        f"probability: {s_r.probability}\n}}"
+                        f"category: {s_r.category.name}\n  "
+                        f"probability: {s_r.probability.name}\n}}"
                     )
                 ratings_lines.append("\n".join(lines))
             await client2.send_message(event.chat_id, "\n----\n".join(ratings_lines), reply_to=event.message.id)
