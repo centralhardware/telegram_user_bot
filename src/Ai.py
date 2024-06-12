@@ -19,19 +19,17 @@ async def answer(event):
     except BaseException:
         try:
             await client2.send_message(event.chat_id, response.prompt_feedback, reply_to=event.message.id)
-            return
         except BaseException:
             pass
         try:
             await client2.send_message(event.chat_id, response.candidates[0].finish_reason, reply_to=event.message.id)
-            return
         except BaseException:
             pass
         try:
             await client2.send_message(event.chat_id, response.candidates[0].safety_ratings, reply_to=event.message.id)
-            return
         except BaseException:
             pass
+        return
     logging.info(f"ask ai {query} answer {response.text}")
     if event.chat_id == -1001633660171:
         if event.message.reply_to_msg_id is not None:
