@@ -16,7 +16,7 @@ async def answer(event):
         f"ты лаконичный ассистент, который отвечает точно: {query}")
     try:
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
-    except Exception:
+    except ValueError:
         await client2.send_message(event.chat_id, response.prompt_feedback, reply_to=event.message.id)
         await client2.send_message(event.chat_id, response.candidates[0].finish_reason, reply_to=event.message.id)
         await client2.send_message(event.chat_id, response.candidates[0].safety_ratings, reply_to=event.message.id)
