@@ -10,12 +10,12 @@ from TelegramUtils import client2
 
 genai.configure(api_key=config.gemini_api_key)
 
-async def get_messages(message, client, res = '', count = 0):
+async def get_messages(message, client, res = [], count = 0):
     reply = await client.get_messages(message.chat.id, ids = message.reply_to_msg_id)
     if isinstance(reply, TotalList) or count >= 15:
         return res
 
-    res = res + reply.raw_text + "\n"
+    res.append(reply.raw_text)
     count = count+1
     return await get_messages(reply, client, res, count)
 
@@ -26,8 +26,11 @@ async def answer(event):
     query = event.raw_text.replace('!ai', '')
 
     context = await get_messages(event.message, event.client)
+    context.reverse()
+    res_context = '\n'.join(context)
+    logging.info(res_context)
     response = model.generate_content(
-        context + '\n' + query,
+        res_context + '\n' + query,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
