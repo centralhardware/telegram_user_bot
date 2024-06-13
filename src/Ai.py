@@ -10,13 +10,19 @@ from TelegramUtils import client2
 
 genai.configure(api_key=config.gemini_api_key)
 
-async def get_messages(message, client, res = [], count = 0):
-    reply = await client.get_messages(message.chat.id, ids = message.reply_to_msg_id)
+
+async def get_messages(message, client, res=[], count=0):
+    reply = await client.get_messages(message.chat.id, ids=message.reply_to_msg_id)
     if isinstance(reply, TotalList) or count >= 15:
         return res
 
-    res.append({'role': reply.id, 'parts': reply.raw_text})
-    count = count+1
+    if 'gemini AI' in reply.raw_text:
+        role = 'AI'
+    else:
+        role = 'Human'
+
+    res.append({'role': role, 'parts': reply.raw_text.replace('!ai', '').replace(' gemini AI', '')})
+    count = count + 1
     return await get_messages(reply, client, res, count)
 
 
