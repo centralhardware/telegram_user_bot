@@ -27,10 +27,9 @@ async def answer(event):
 
     context = await get_messages(event.message, event.client)
     context.reverse()
-    res_context = '\n'.join(context)
-    logging.info(res_context)
-    response = model.generate_content(
-        res_context + '\n' + query,
+    chat = model.start_chat(history = context)
+    response = chat.send_message(
+        query,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
