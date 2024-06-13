@@ -33,7 +33,7 @@ async def answer(event):
 
     context = await get_messages(event.message, event.client)
     context.reverse()
-    context.append({'role': event.message.id, 'parts': query})
+    context.append({'role': 'user', 'parts': query})
     response = model.generate_content(
         query,
         safety_settings={
