@@ -35,7 +35,7 @@ async def answer(event):
     context.reverse()
     context.append({'role': 'user', 'parts': [query]})
     response = model.generate_content(
-        query,
+        context,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
