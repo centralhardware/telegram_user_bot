@@ -2,6 +2,7 @@ import logging
 import textwrap
 
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 from config import config
 from TelegramUtils import client2
@@ -13,7 +14,11 @@ async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
     query = event.raw_text.replace('!ai', '')
     response = model.generate_content(
-        f"ты лаконичный ассистент, который отвечает точно: {query}")
+        f"ты лаконичный ассистент, который отвечает точно: {query}",
+        safety_settings={
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+    })
     try:
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
     except BaseException:
