@@ -16,7 +16,7 @@ async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
     query = event.raw_text.replace('!ai', '')
 
-    if event.message.reply_to_msg_id is not None and event.message.reply_to_msg_id not in chats:
+    if event.message.reply_to_msg_id is None or event.message.reply_to_msg_id not in chats:
         chats[event.message.id] = model.start_chat()
 
     if event.message.reply_to_msg_id is None:
