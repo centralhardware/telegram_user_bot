@@ -36,7 +36,6 @@ async def answer(event):
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
         })
-    chats[event.message.id] = chats[msg_id]
     try:
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
     except BaseException:
@@ -59,4 +58,5 @@ async def answer(event):
         return
     logging.info(f"ask ai {query} answer {response.text}")
     for line in res:
-        await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
+        res = await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
+    chats[res.id] = chats[msg_id]
