@@ -11,7 +11,7 @@ from TelegramUtils import client2
 genai.configure(api_key=config.gemini_api_key)
 
 
-async def get_messages(message, client, res=[], count=0):
+async def get_messages(message, client,res, count=0):
     reply = await client.get_messages(message.chat.id, ids=message.reply_to_msg_id)
     if isinstance(reply, TotalList) or count >= 15:
         return res
@@ -31,7 +31,7 @@ async def answer(event):
                                   system_instruction='ты лаконичный ассистент, который отвечает точно')
     query = event.raw_text.replace('!ai', '')
 
-    context = await get_messages(event.message, event.client)
+    context = await get_messages(event.message, event.client, [])
     context.reverse()
     context.append({'role': 'user', 'parts': [query]})
     response = model.generate_content(
