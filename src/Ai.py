@@ -13,7 +13,9 @@ chats = {}
 
 
 async def answer(event):
-    model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
+    model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
+                                  system_instruction='ты лаконичный ассистент, который отвечает точно')
+
     query = event.raw_text.replace('!ai', '')
 
     if event.message.reply_to_msg_id is None or event.message.reply_to_msg_id not in chats:
@@ -30,7 +32,7 @@ async def answer(event):
         return
 
     response = chats[msg_id].send_message(
-        f"ты лаконичный ассистент, который отвечает точно: {query}",
+        query,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
