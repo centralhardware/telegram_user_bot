@@ -24,8 +24,9 @@ async def answer(event):
     else:
         msg_id = event.message.reply_to_msg_id
 
-    if len(chats[msg_id].history) >= 10:
+    if len(chats[msg_id].history) >= 30:
         await client2.send_message(event.chat.id, 'Достигнут лимит', reply_to=event.message.id)
+        del chats[msg_id]
         return
 
     response = chats[msg_id].send_message(
