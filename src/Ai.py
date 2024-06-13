@@ -15,7 +15,7 @@ async def get_messages(message, client, res = [], count = 0):
     if isinstance(reply, TotalList) or count >= 15:
         return res
 
-    res.append(reply.raw_text)
+    res.append({'role': reply.id, 'parts': reply.raw_text})
     count = count+1
     return await get_messages(reply, client, res, count)
 
@@ -27,8 +27,8 @@ async def answer(event):
 
     context = await get_messages(event.message, event.client)
     context.reverse()
-    chat = model.start_chat(history = context)
-    response = chat.send_message(
+    context.append({'role': event.message.id, 'parts': query})
+    response = model.generate_content(
         query,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
