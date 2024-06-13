@@ -9,18 +9,34 @@ from TelegramUtils import client2
 
 genai.configure(api_key=config.gemini_api_key)
 
+chats = {}
+
 
 async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
     query = event.raw_text.replace('!ai', '')
-    response = model.generate_content(
+
+    if event.message.reply_to_msg_id is not None and event.message.reply_to_msg_id not in chats:
+        chats[event.message.id] = model.start_chat()
+
+    if event.message.reply_to_msg_id is None:
+        msg_id = event.message.id
+    else:
+        msg_id = event.message.reply_to_msg_id
+
+    if len(chats[msg_id].history) >= 10:
+        await client2.send_message(event.chat.id, 'Достигнут лимит', reply_to=event.message.id)
+        return
+
+    response = chats[msg_id].send_message(
         f"ты лаконичный ассистент, который отвечает точно: {query}",
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
-    })
+        })
+    chats[event.message.id] = chats[msg_id]
     try:
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
     except BaseException:
@@ -42,14 +58,5 @@ async def answer(event):
             pass
         return
     logging.info(f"ask ai {query} answer {response.text}")
-    if event.chat_id == -1001633660171:
-        if event.message.reply_to_msg_id is not None:
-            for line in res:
-                await client2.send_message(event.chat.id, line + '\n\n gemini AI',
-                                           reply_to=event.message.reply_to_msg_id)
-        else:
-            for line in res:
-                await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
-    else:
-        for line in res:
-            await event.client.edit_message(event.message, line + '\n\n gemini AI')
+    for line in res:
+        await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
