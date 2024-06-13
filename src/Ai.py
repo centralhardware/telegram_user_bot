@@ -21,7 +21,7 @@ async def get_messages(message, client, res=[], count=0):
     else:
         role = 'user'
 
-    res.append({'role': role, 'parts': reply.raw_text.replace('!ai', '').replace(' gemini AI', '')})
+    res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     count = count + 1
     return await get_messages(reply, client, res, count)
 
@@ -33,7 +33,7 @@ async def answer(event):
 
     context = await get_messages(event.message, event.client)
     context.reverse()
-    context.append({'role': 'user', 'parts': query})
+    context.append({'role': 'user', 'parts': [query]})
     response = model.generate_content(
         query,
         safety_settings={
