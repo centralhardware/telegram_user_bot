@@ -3,36 +3,31 @@ import textwrap
 
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from telethon.helpers import TotalList
 
 from config import config
 from TelegramUtils import client2
 
 genai.configure(api_key=config.gemini_api_key)
 
-chats = {}
+async def get_messages(message, client, res = '', count = 0):
+    reply = await client.get_messages(message.chat.id, ids = message.reply_to_msg_id)
+    if isinstance(reply, TotalList) or count >= 15:
+        return res
+
+    res = res + reply.raw_text + "\n"
+    count = count+1
+    return await get_messages(reply, client, res, count)
 
 
 async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
                                   system_instruction='ты лаконичный ассистент, который отвечает точно')
-
     query = event.raw_text.replace('!ai', '')
 
-    if event.message.reply_to_msg_id is None or event.message.reply_to_msg_id not in chats:
-        chats[event.message.id] = model.start_chat()
-
-    if event.message.reply_to_msg_id is None:
-        msg_id = event.message.id
-    else:
-        msg_id = event.message.reply_to_msg_id
-
-    if len(chats[msg_id].history) >= 30:
-        await client2.send_message(event.chat.id, 'Достигнут лимит', reply_to=event.message.id)
-        del chats[msg_id]
-        return
-
-    response = chats[msg_id].send_message(
-        query,
+    context = await get_messages(event.message, event.client)
+    response = model.generate_content(
+        context + '\n' + query,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -61,5 +56,4 @@ async def answer(event):
         return
     logging.info(f"ask ai {query} answer {response.text}")
     for line in res:
-        res = await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
-    chats[res.id] = chats[msg_id]
+        await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id)
