@@ -11,7 +11,7 @@ from TelegramUtils import client2
 genai.configure(api_key=config.gemini_api_key)
 
 
-async def get_messages(message, client,res, count=0):
+async def get_messages(message, client, res, count=0):
     reply = await client.get_messages(message.chat.id, ids=message.reply_to_msg_id)
     if isinstance(reply, TotalList) or count >= 15:
         return res
@@ -27,7 +27,10 @@ async def get_messages(message, client,res, count=0):
     else:
         role = 'user'
     if role == 'user':
-        res.append({'role': role, 'parts': [f"Сообщение от {user.first_name} {user.last_name} {username}" + ': ' + reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
+        res.append({'role': role, 'parts': [
+            f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
+                                                                                                          '').replace(
+                ' gemini AI', '')]})
     else:
         res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     count = count + 1
@@ -36,7 +39,7 @@ async def get_messages(message, client,res, count=0):
 
 async def answer(event):
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
-                                  system_instruction='ты лаконичный ассистент, который отвечает точно')
+                                  system_instruction='ты лаконичный ассистент, который отвечает точно. Messages from user in chat come in the following format: Сообщение от {user name} / {user_last_name} / {user nickname}: {message content} Both name and nickname may be empty')
     query = event.raw_text.replace('!ai', '')
 
     context = await get_messages(event.message, event.client, [])
