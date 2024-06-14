@@ -25,9 +25,9 @@ async def get_messages(message, client,res, count=0):
     if 'gemini AI' in reply.raw_text:
         role = 'model'
     else:
-        role = f"user:{user.first_name} {user.last_name} {username}"
+        role = 'user'
 
-    res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
+    res.append({'role': role, 'parts': [f"Сообщение от {user.first_name} {user.last_name} {username}" + reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     count = count + 1
     return await get_messages(reply, client, res, count)
 
