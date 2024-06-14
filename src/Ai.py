@@ -16,10 +16,16 @@ async def get_messages(message, client,res, count=0):
     if isinstance(reply, TotalList) or count >= 15:
         return res
 
+    user = await client.get_entity(row[0])
+    if user.usernames is None:
+        username = user.username
+    else:
+        username = user.usernames[0].username
+
     if 'gemini AI' in reply.raw_text:
         role = 'model'
     else:
-        role = 'user'
+        role = f"user:{user.first_name} {user.last_name} {username}"
 
     res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     count = count + 1
