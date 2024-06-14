@@ -45,7 +45,7 @@ async def answer(event):
     context = await get_messages(event.message, event.client, [])
     context.reverse()
 
-    user = await event.client.get_entity(event.message.id)
+    user = await event.client.get_entity(event.message.sender.id)
     if user.usernames is None:
         username = user.username
     else:
