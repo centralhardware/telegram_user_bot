@@ -4,6 +4,7 @@ import textwrap
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from telethon.helpers import TotalList
+import PIL.Image
 
 from config import config
 from TelegramUtils import client2
@@ -51,8 +52,12 @@ async def answer(event):
     else:
         username = user.usernames[0].username
 
+    if event.message.media is not None:
+        media = await event.client.download_media(event.message.media)
+        context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query, PIL.Image.open(media)]})
+    else:
+        context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query]})
 
-    context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query]})
     response = model.generate_content(
         context,
         safety_settings={

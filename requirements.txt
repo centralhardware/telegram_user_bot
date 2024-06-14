@@ -3,3 +3,4 @@ aiohttp~=3.9.5
 clickhouse_connect~=0.7.12
 termcolor~=2.4.0
 google-generativeai~=0.6.0
+pillow~=10.3.0
