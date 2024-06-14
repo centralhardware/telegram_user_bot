@@ -27,7 +27,7 @@ async def get_messages(message, client,res, count=0):
     else:
         role = 'user'
     if role == 'user':
-        res.append({'role': role, 'parts': [f"Сообщение от {user.first_name} {user.last_name} {username}" + reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
+        res.append({'role': role, 'parts': [f"Сообщение от {user.first_name} {user.last_name} {username}" + ': ' + reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     else:
         res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     count = count + 1
