@@ -84,25 +84,6 @@ async def answer(event):
     except Exception:
         first_name = None
         last_name = None
-    clickhouse.insert('ai', [[
-        datetime.now(),
-        usernames,
-        first_name,
-        last_name,
-        event.message.sender.id,
-        query,
-        model.count_tokens(context).total_tokens
-    ]],
-                      [
-                          'date_time',
-                          'usernames',
-                          'first_name',
-                          'last_name',
-                          'user_id',
-                          'text',
-                          'token_count'
-                      ]
-                      )
     response = model.generate_content(
         context,
         safety_settings={
@@ -113,6 +94,27 @@ async def answer(event):
         })
     try:
         res = textwrap.wrap(response.text, 4000, break_long_words=True, replace_whitespace=False)
+        clickhouse.insert('ai', [[
+            datetime.now(),
+            usernames,
+            first_name,
+            last_name,
+            event.message.sender.id,
+            query,
+            model.count_tokens(context).total_tokens,
+            response.usage_metadata.total_token_count
+        ]],
+                          [
+                              'date_time',
+                              'usernames',
+                              'first_name',
+                              'last_name',
+                              'user_id',
+                              'text',
+                              'token_count',
+                              'out_tokens'
+                          ]
+                          )
     except BaseException:
         try:
             ratings_lines = []
