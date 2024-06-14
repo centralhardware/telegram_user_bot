@@ -16,7 +16,7 @@ async def get_messages(message, client,res, count=0):
     if isinstance(reply, TotalList) or count >= 15:
         return res
 
-    user = await client.get_entity(row[0])
+    user = await client.get_entity(reply.from_user.id)
     if user.usernames is None:
         username = user.username
     else:
