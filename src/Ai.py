@@ -1,5 +1,7 @@
 import logging
 import textwrap
+import time
+import uuid
 
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
@@ -53,8 +55,11 @@ async def answer(event):
         username = user.usernames[0].username
 
     if event.message.media is not None:
-        media = await event.client.download_media(event.message.media)
-        file = genai.upload_file(media)
+        media = await event.client.download_media(event.message.media, file=str(uuid.uuid4()).lower())
+        file = genai.get_file(media)
+        while file.state.name == "PROCESSING":
+            time.sleep(10)
+            file = genai.get_file(file.name)
         context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query, file]})
     else:
         context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query]})
