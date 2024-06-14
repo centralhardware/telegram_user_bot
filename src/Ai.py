@@ -56,7 +56,7 @@ async def answer(event):
 
     if event.message.media is not None:
         media = await event.client.download_media(event.message.media, file=str(uuid.uuid4()).lower())
-        file = genai.get_file(media)
+        file = genai.upload_file(media)
         while file.state.name == "PROCESSING":
             time.sleep(10)
             file = genai.get_file(file.name)
