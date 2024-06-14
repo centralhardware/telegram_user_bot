@@ -54,7 +54,8 @@ async def answer(event):
 
     if event.message.media is not None:
         media = await event.client.download_media(event.message.media)
-        context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query, PIL.Image.open(media)]})
+        file = genai.upload_file(media)
+        context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query, file]})
     else:
         context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query]})
 
