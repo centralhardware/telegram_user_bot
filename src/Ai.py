@@ -44,7 +44,15 @@ async def answer(event):
 
     context = await get_messages(event.message, event.client, [])
     context.reverse()
-    context.append({'role': 'user', 'parts': [query]})
+
+    user = await client.get_entity(event.message.id)
+    if user.usernames is None:
+        username = user.username
+    else:
+        username = user.usernames[0].username
+
+
+    context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query]})
     response = model.generate_content(
         context,
         safety_settings={
