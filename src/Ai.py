@@ -102,7 +102,7 @@ async def answer(event):
             event.message.sender.id,
             query,
             model.count_tokens(context).total_tokens,
-            response.usage_metadata.total_token_count
+            response.usage_metadata.candidates_token_count
         ]],
                           [
                               'date_time',
