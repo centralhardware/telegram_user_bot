@@ -2,14 +2,19 @@ import logging
 import textwrap
 import time
 import uuid
+from datetime import datetime
 
+import clickhouse_connect
 import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from telethon.helpers import TotalList
-import PIL.Image
 
 from config import config
 from TelegramUtils import client2
+
+clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
+                                           username=config.db_user, password=config.db_password,
+                                           settings={'async_insert': '1', 'wait_for_async_insert': '0'})
 
 genai.configure(api_key=config.gemini_api_key)
 
@@ -32,7 +37,7 @@ async def get_messages(message, client, res, count=0):
     if role == 'user':
         res.append({'role': role, 'parts': [
             f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
-                                                                                                          '').replace(
+                                                                                                              '').replace(
                 ' gemini AI', '')]})
     else:
         res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
@@ -60,10 +65,44 @@ async def answer(event):
         while file.state.name == "PROCESSING":
             time.sleep(10)
             file = genai.get_file(file.name)
-        context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query, file]})
+        context.append({'role': 'user',
+                        'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + query,
+                                  file]})
     else:
-        context.append({'role': 'user', 'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' +query]})
+        context.append({'role': 'user',
+                        'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + query]})
 
+    usernames = []
+    if event.message.sender.username is not None:
+        usernames.append(event.message.sender.username)
+    elif event.message.sender.usernames is not None:
+        for u in event.message.sender.usernames:
+            usernames.append(u.username)
+    try:
+        first_name = event.message.sender.first_name
+        last_name = event.message.sender.last_name
+    except Exception:
+        first_name = None
+        last_name = None
+    clickhouse.insert('ai', [[
+        datetime.now(),
+        usernames,
+        first_name,
+        last_name,
+        event.message.sender.id,
+        query,
+        model.count_tokens(context).total_tokens
+    ]],
+                      [
+                          'date_time',
+                          'usernames',
+                          'first_name',
+                          'last_name',
+                          'user_id',
+                          'text',
+                          'token_count'
+                      ]
+                      )
     response = model.generate_content(
         context,
         safety_settings={
