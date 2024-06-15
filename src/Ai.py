@@ -37,7 +37,7 @@ async def get_messages(message, client, res, count=0):
         file = file_cache[reply.id]
         logging.info(f"Get file from cache {file}")
     else:
-        media = await client.download_media(reply, thumb=1)
+        media = await client.download_media(reply)
         if media is not None:
             file = genai.upload_file(media)
             while file.state.name == "PROCESSING":
@@ -91,7 +91,7 @@ async def answer(event):
         username = user.usernames[0].username
 
     if event.message.media is not None:
-        if event.message.file.size >= 1000000:
+        if False:
             await client2.send_message(event.chat.id, 'Слишком большой размер файла')
             return
 
