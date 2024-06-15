@@ -54,7 +54,7 @@ async def answer(event):
         reply_to = reply.sender.id
         is_bot = reply.sender.bot
 
-    if is_bot or reply_to != 7043446518 and not (event.raw_text.startswith('!ai') or event.raw_text.startswith('!ии')):
+    if is_bot or reply_to != 7043446518 and not (event.raw_text.startswith('!ai') or event.raw_text.startswith('!ии') or '@afganor' in event.raw_text):
         return
 
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
