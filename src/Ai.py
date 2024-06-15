@@ -102,7 +102,8 @@ async def answer(event):
             event.message.sender.id,
             query,
             model.count_tokens(context).total_tokens,
-            response.usage_metadata.candidates_token_count
+            response.usage_metadata.candidates_token_count,
+            response.text
         ]],
                           [
                               'date_time',
@@ -112,7 +113,8 @@ async def answer(event):
                               'user_id',
                               'text',
                               'token_count',
-                              'out_tokens'
+                              'out_tokens',
+                              'response'
                           ]
                           )
     except BaseException:
