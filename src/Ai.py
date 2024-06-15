@@ -33,18 +33,18 @@ async def get_messages(message, client, res, count=0):
         username = user.usernames[0].username
 
     if reply.id in file_cache:
-        media = file_cache[reply.id]
-        logging.info(f"Get file from cache {media}")
+        file = file_cache[reply.id]
+        logging.info(f"Get file from cache {file}")
     else:
         media = await client.download_media(reply, thumb=1)
-        logging.info(f"Downloaded file from cache {media}")
+        if media is not None:
+            file = genai.upload_file(media)
+            while file.state.name == "PROCESSING":
+                time.sleep(10)
+                file = genai.get_file(file.name)
+            file_cache[reply.id] = file
+            logging.info(f"Downloaded file from cache {file}")
 
-    file = None
-    if media is not None:
-        file = genai.upload_file(media)
-        while file.state.name == "PROCESSING":
-            time.sleep(10)
-            file = genai.get_file(file.name)
     if 'gemini AI' in reply.raw_text:
         res.append({'role': 'model', 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     else:
