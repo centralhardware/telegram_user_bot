@@ -19,6 +19,7 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
 
 genai.configure(api_key=config.gemini_api_key)
 
+file_cache = {}
 
 async def get_messages(message, client, res, count=0):
     reply = await client.get_messages(message.chat.id, ids=message.reply_to_msg_id)
@@ -31,7 +32,13 @@ async def get_messages(message, client, res, count=0):
     else:
         username = user.usernames[0].username
 
-    media = await client.download_media(reply, thumb=1)
+    if reply.id in file_cache:
+        media = file_cache[reply.id]
+        logging.info(f"Get file from cache {media}")
+    else:
+        media = await client.download_media(reply, thumb=1)
+        logging.info(f"Downloaded file from cache {media}")
+
     file = None
     if media is not None:
         file = genai.upload_file(media)
