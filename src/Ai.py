@@ -107,7 +107,8 @@ async def answer(event):
             query,
             model.count_tokens(context).total_tokens,
             response.usage_metadata.candidates_token_count,
-            response.text
+            response.text,
+            'gemini-1.5-pro'
         ]],
                           [
                               'date_time',
@@ -118,7 +119,8 @@ async def answer(event):
                               'text',
                               'token_count',
                               'out_tokens',
-                              'response'
+                              'response',
+                              'model'
                           ]
                           )
     except BaseException:
