@@ -46,6 +46,15 @@ async def get_messages(message, client, res, count=0):
 
 
 async def answer(event):
+    reply = await event.client.get_messages(event.message.chat.id, ids=event.message.reply_to_msg_id)
+    if reply is not None and not isinstance(reply, TotalList):
+        reply_to = reply.sender.id
+    else:
+        reply_to = None
+
+    if reply_to != 7043446518 and not (event.raw_text.startswith('!ai') or event.raw_text.startswith('!ии')):
+        return
+
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
                                   system_instruction='ты лаконичный ассистент, который отвечает точно. Messages from user in chat come in the following format: Сообщение от {user name} / {user_last_name} / {user nickname}: {message content} Both name and nickname may be empty. Не выводи префикс сообщения до тех пор пока этого не попросили явно.')
     query = event.raw_text.replace('!ai', '').replace('!ии', '')
