@@ -60,6 +60,10 @@ async def answer(event):
         username = user.usernames[0].username
 
     if event.message.media is not None:
+        if event.message.file.size >= 1000000:
+            await client2.send_message(event.chat.id, 'Слишком большой размер файла')
+            return
+
         media = await event.client.download_media(event.message.media, file=str(uuid.uuid4()).lower())
         file = genai.upload_file(media)
         while file.state.name == "PROCESSING":
