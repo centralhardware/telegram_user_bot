@@ -3,6 +3,7 @@ import textwrap
 import time
 import uuid
 from datetime import datetime
+import base64
 
 import clickhouse_connect
 import google.generativeai as genai
@@ -30,17 +31,27 @@ async def get_messages(message, client, res, count=0):
     else:
         username = user.usernames[0].username
 
+    media = await client.download_media(reply, thumb=1)
+    file = None
+    if media is not None:
+        file = genai.upload_file(media)
+        while file.state.name == "PROCESSING":
+            time.sleep(10)
+            file = genai.get_file(file.name)
     if 'gemini AI' in reply.raw_text:
-        role = 'model'
+        res.append({'role': 'model', 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
     else:
-        role = 'user'
-    if role == 'user':
-        res.append({'role': role, 'parts': [
-            f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
-                                                                                                              '').replace(
-                ' gemini AI', '')]})
-    else:
-        res.append({'role': role, 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
+        if file is not None:
+            res.append({'role': 'user', 'parts': [
+                f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
+                                                                                                                  '').replace(
+                    ' gemini AI', ''), file]})
+        else:
+            res.append({'role': 'user', 'parts': [
+                f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
+                                                                                                                  '').replace(
+                    ' gemini AI', '')]})
+
     count = count + 1
     return await get_messages(reply, client, res, count)
 
@@ -54,7 +65,8 @@ async def answer(event):
         reply_to = reply.sender.id
         is_bot = reply.sender.bot
 
-    if is_bot or reply_to != 7043446518 and not (event.raw_text.startswith('!ai') or event.raw_text.startswith('!ии') or '@afganor' in event.raw_text):
+    if is_bot or reply_to != 7043446518 and not (
+            event.raw_text.startswith('!ai') or event.raw_text.startswith('!ии') or '@afganor' in event.raw_text):
         return
 
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
