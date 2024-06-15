@@ -32,6 +32,7 @@ async def get_messages(message, client, res, count=0):
     else:
         username = user.usernames[0].username
 
+    file = None
     if reply.id in file_cache:
         file = file_cache[reply.id]
         logging.info(f"Get file from cache {file}")
