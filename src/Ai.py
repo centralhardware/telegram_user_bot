@@ -111,12 +111,13 @@ async def answer(event):
             return
 
         media = await event.client.download_media(event.message.media, file=str(uuid.uuid4()).lower())
-        file = genai.upload_file(media)
-        while file.state.name == "PROCESSING":
-            time.sleep(10)
-            file = genai.get_file(file.name)
+        if media is not None:
+            file = genai.upload_file(media)
+            while file.state.name == "PROCESSING":
+                time.sleep(10)
+                file = genai.get_file(file.name)
 
-        parts.append(file)
+            parts.append(file)
 
     context.append({'role': 'user','parts': parts})
 
