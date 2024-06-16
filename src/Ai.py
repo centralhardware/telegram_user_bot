@@ -172,6 +172,5 @@ async def answer(event):
         except BaseException:
             pass
         return
-    logging.info(f"ask ai {query} answer {response.text}")
     for line in res:
         await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id, parse_mode='md')
