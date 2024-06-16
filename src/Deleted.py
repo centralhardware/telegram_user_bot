@@ -1,7 +1,6 @@
 import clickhouse_connect
 
 from config import config
-from TelegramUtils import client2
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password)
@@ -36,4 +35,4 @@ async def deleted(event):
 
         msg = msg + f"{res.result_rows.index(row) + 1} : {first_name} {last_name} {username} - {row[1]}\n"
 
-    await client2.send_message(event.chat.id, msg, reply_to=event.message.id)
+    await event.client.send_message(event.chat.id, msg, reply_to=event.message.id)
