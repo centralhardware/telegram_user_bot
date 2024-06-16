@@ -81,7 +81,7 @@ async def answer(event):
 
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest',
                                   system_instruction='ты лаконичный ассистент, который отвечает точно. Messages from user in chat come in the following format: Сообщение от {user name} / {user_last_name} / {user nickname}: {message content} Both name and nickname may be empty. Не выводи префикс сообщения до тех пор пока этого не попросили явно.Никогда не отвечай таким же текстом как и запрос')
-    query = event.raw_text.replace('!ai', '').replace('!ии', '')
+    query = event.raw_text.replace('!ai', '').replace('!ии', '').replace('@afganor', '')
 
     context = await get_messages(event.message, event.client, [])
     context.reverse()
