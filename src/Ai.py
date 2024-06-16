@@ -1,4 +1,5 @@
 import logging
+import re
 import textwrap
 import time
 import uuid
@@ -7,6 +8,7 @@ import base64
 
 import clickhouse_connect
 import google.generativeai as genai
+import requests
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from telethon.helpers import TotalList
 
@@ -64,6 +66,10 @@ async def get_messages(message, client, res, count=0):
     return await get_messages(reply, client, res, count)
 
 
+def fetch_url(url):
+    return requests.get(url).text
+
+
 async def answer(event):
     reply = await event.client.get_messages(event.message.chat.id, ids=event.message.reply_to_msg_id)
 
@@ -90,6 +96,15 @@ async def answer(event):
     else:
         username = user.usernames[0].username
 
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    url = re.findall(regex, query)
+    urls = [fetch_url(x[0]) for x in url]
+
+    parts = []
+    for s in urls:
+        parts.append(s)
+
+    parts.append(f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + query)
     if event.message.media is not None:
         if False:
             await client2.send_message(event.chat.id, 'Слишком большой размер файла')
@@ -100,12 +115,10 @@ async def answer(event):
         while file.state.name == "PROCESSING":
             time.sleep(10)
             file = genai.get_file(file.name)
-        context.append({'role': 'user',
-                        'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + query,
-                                  file]})
-    else:
-        context.append({'role': 'user',
-                        'parts': [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + query]})
+
+        parts.append(file)
+
+    context.append({'role': 'user','parts': parts})
 
     usernames = []
     if event.message.sender.username is not None:
