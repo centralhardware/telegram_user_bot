@@ -9,5 +9,3 @@ def create_telegram_client(session_name, phone):
     c.connect()
     c.start(phone=phone)
     return c
-
-client2 = create_telegram_client('session/alex2', config.telephone2)

@@ -1,19 +1,15 @@
 import logging
-import re
 import textwrap
 import time
 import uuid
 from datetime import datetime
-import base64
 
 import clickhouse_connect
 import google.generativeai as genai
-import requests
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from telethon.helpers import TotalList
 
 from config import config
-from TelegramUtils import client2
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password,
@@ -22,6 +18,7 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
 genai.configure(api_key=config.gemini_api_key)
 
 file_cache = {}
+
 
 async def get_messages(message, client, res, count=0):
     reply = await client.get_messages(message.chat.id, ids=message.reply_to_msg_id)
@@ -95,7 +92,7 @@ async def answer(event):
     parts = [f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + query]
     if event.message.media is not None:
         if False:
-            await client2.send_message(event.chat.id, 'Слишком большой размер файла')
+            await event.client.send_message(event.chat.id, 'Слишком большой размер файла')
             return
 
         media = await event.client.download_media(event.message.media, file=str(uuid.uuid4()).lower())
@@ -107,7 +104,7 @@ async def answer(event):
 
             parts.append(file)
 
-    context.append({'role': 'user','parts': parts})
+    context.append({'role': 'user', 'parts': parts})
 
     usernames = []
     if event.message.sender.username is not None:
@@ -170,9 +167,9 @@ async def answer(event):
                         f"probability: {s_r.probability.name}\n}}"
                     )
                 ratings_lines.append("\n".join(lines))
-            await client2.send_message(event.chat_id, "\n----\n".join(ratings_lines), reply_to=event.message.id)
+            await event.client.send_message(event.chat_id, "\n----\n".join(ratings_lines), reply_to=event.message.id)
         except BaseException:
             pass
         return
     for line in res:
-        await client2.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id, parse_mode='md')
+        await event.client.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id, parse_mode='md')

@@ -14,6 +14,7 @@ from web import MessageSender
 
 
 client = create_telegram_client('session/alex', config.telephone)
+client2 = create_telegram_client('session/alex2', config.telephone2)
 
 client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
 client.add_event_handler(save_deleted, events.MessageDeleted())
@@ -23,8 +24,8 @@ client.add_event_handler(top, events.NewMessage(outgoing=True, pattern='!top', f
 client.add_event_handler(top, events.NewMessage(incoming=True, pattern='!top', forwards=False, chats=[-1001633660171]))
 client.add_event_handler(deleted, events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
 client.add_event_handler(deleted, events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
-client.add_event_handler(answer, events.NewMessage(outgoing=True, forwards=False, chats=[-1001633660171, -1002128023267]))
-client.add_event_handler(answer, events.NewMessage(incoming=True, forwards=False, chats=[-1001633660171, -1002128023267]))
+client2.add_event_handler(answer, events.NewMessage(outgoing=True, forwards=False, chats=[-1001633660171, -1002128023267]))
+client2.add_event_handler(answer, events.NewMessage(incoming=True, forwards=False, chats=[-1001633660171, -1002128023267]))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
