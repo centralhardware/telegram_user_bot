@@ -133,7 +133,7 @@ async def answer(event):
     except Exception:
         first_name = None
         last_name = None
-    response = model.generate_content(
+    response = await model.generate_content_async(
         context,
         safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
