@@ -50,11 +50,11 @@ async def get_messages(message, client, res, count=0):
     else:
         if file is not None:
             res.append({'role': 'user', 'parts': [
-                f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace[-3]('!ai',
+                f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text[-3].replace('!ai',
                                                                                                                   ''), file]})
         else:
             res.append({'role': 'user', 'parts': [
-                f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace[-3]('!ai',
+                f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text[-3].replace('!ai',
                                                                                                                   '')]})
 
     count = count + 1
