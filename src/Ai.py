@@ -175,4 +175,4 @@ async def answer(event):
             pass
         return
     for line in res:
-        await event.client.send_message(event.chat.id, line + '\n\n gemini AI\n' + len(context-1)+'/60', reply_to=event.message.id, parse_mode='md')
+        await event.client.send_message(event.chat.id, line + '\n\n gemini AI', reply_to=event.message.id, parse_mode='md')
