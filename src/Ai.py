@@ -46,17 +46,17 @@ async def get_messages(message, client, res, count=0):
             logging.info(f"Downloaded file from cache {file}")
 
     if 'gemini AI' in reply.raw_text:
-        res.append({'role': 'model', 'parts': [reply.raw_text.replace('!ai', '').replace(' gemini AI', '')]})
+        res.append({'role': 'model', 'parts': [reply.raw_text.replace('!ai', '').replace('!ии', '').replace(' gemini AI', '')]})
     else:
         if file is not None:
             res.append({'role': 'user', 'parts': [
                 f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
-                                                                                                                  '').replace(
+                                                                                                                  '').replace('!ии', '').replace(
                     ' gemini AI', ''), file]})
         else:
             res.append({'role': 'user', 'parts': [
                 f"Сообщение от {user.first_name} / {user.last_name} / {username}" + ': ' + reply.raw_text.replace('!ai',
-                                                                                                                  '').replace(
+                                                                                                                  '').replace('!ии', '').replace(
                     ' gemini AI', '')]})
 
     count = count + 1
