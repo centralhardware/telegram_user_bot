@@ -24,8 +24,8 @@ client2.add_event_handler(top, events.NewMessage(outgoing=True, pattern='!top', 
 client2.add_event_handler(top, events.NewMessage(incoming=True, pattern='!top', forwards=False, chats=[-1001633660171]))
 client2.add_event_handler(deleted, events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
 client2.add_event_handler(deleted, events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
-client2.add_event_handler(answer, events.NewMessage(outgoing=True, forwards=False, chats=[-1002128023267]))
-client2.add_event_handler(answer, events.NewMessage(incoming=True, forwards=False, chats=[-1002128023267]))
+client2.add_event_handler(answer, events.NewMessage(outgoing=True, forwards=False, chats=[-1002128023267, -1002078316518]))
+client2.add_event_handler(answer, events.NewMessage(incoming=True, forwards=False, chats=[-1002128023267, -1002078316518]))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
