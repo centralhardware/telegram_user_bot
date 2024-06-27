@@ -135,4 +135,4 @@ async def save_deleted(event):
         except Exception:
             message = msg_id
 
-        logging.info(colored(f" Deleted {chat_title} {message}", 'yellow'))
+        logging.info(colored(f" Deleted {chat_title} {msg_id} {message}", 'yellow'))
