@@ -8,7 +8,6 @@ from notify_admins import notify_admins
 from scrapper import save_outgoing, save_incoming, save_deleted
 from Top import top
 from Deleted import deleted
-from Ai import answer
 from TelegramUtils import create_telegram_client
 from web import MessageSender
 
@@ -24,8 +23,6 @@ client2.add_event_handler(top, events.NewMessage(outgoing=True, pattern='!top', 
 client2.add_event_handler(top, events.NewMessage(incoming=True, pattern='!top', forwards=False, chats=[-1001633660171]))
 client2.add_event_handler(deleted, events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
 client2.add_event_handler(deleted, events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
-client2.add_event_handler(answer, events.NewMessage(outgoing=True, forwards=False, chats=[-1002128023267, -1002078316518, -1002225922548, -1002164252553]))
-client2.add_event_handler(answer, events.NewMessage(incoming=True, forwards=False, chats=[-1002128023267, -1002078316518, -1002225922548, -1002164252553]))
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
