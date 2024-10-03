@@ -11,7 +11,7 @@ async def deleted(event):
         """
         select user_id, count(user_id)
         from telegram_user_bot.deleted_log deleted
-        join (select * from chats_log where chat_id=-1001633660171) log on log.message_id = deleted.message_id
+        join (select * from telegram_user_bot.chats_log where chat_id=-1001633660171) log on log.message_id = deleted.message_id
         where chat_id=-1001633660171
         group by user_id
         order by count(user_id) desc
