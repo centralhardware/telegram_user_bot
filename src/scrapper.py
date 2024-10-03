@@ -46,7 +46,7 @@ async def save_outgoing(event):
     if event.raw_text != '':
         logging.info(f"outcoming {chat_title}: {event.raw_text} {admins}")
         data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, admins]]
-        clickhouse.insert('telegram_messages_new', data,
+        clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
                           ['date_time', 'message', 'title', 'usernames', 'id', 'admins2'])
     else:
         logging.info("ignore empty message")
