@@ -53,7 +53,7 @@ async def save_outgoing(event):
 
 
 def save_inc(data):
-    clickhouse.insert('chats_log', data,
+    clickhouse.insert('telegram_user_bot.chats_log', data,
                       ['date_time',
                        'chat_title',
                        'chat_id',
@@ -68,7 +68,7 @@ def save_inc(data):
 
 
 def save_del(data):
-    clickhouse.insert('deleted_log',
+    clickhouse.insert('telegram_user_bot.deleted_log',
                       data,
                       ['date_time', 'chat_id', 'message_id'])
 
