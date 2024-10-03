@@ -11,13 +11,13 @@ async def top(event):
     res = clickhouse.query("""
             select *
             from (select any(user_id), count(*) as count
-                from chats_log
+                from telegram_user_bot.chats_log
                 where chat_id=-1001633660171 and has(tokens(lowerUTF8(message)), lowerUTF8(%(word)s)) and not startsWith(message, '!top ')
                 group by user_id
                 limit 10
                 UNION ALL
                 select 428985392, count(*) as count
-                from telegram_messages_new
+                from telegram_user_bot.telegram_messages_new
                 where id=-1001633660171 and has(tokens(lowerUTF8(message)), lowerUTF8(%(word)s)) and not startsWith(message, '!top '))
             order by count desc
             limit 10

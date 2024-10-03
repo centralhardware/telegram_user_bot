@@ -117,7 +117,7 @@ async def save_deleted(event):
         try:
             chat_title = clickhouse.query("""
             SELECT chat_title
-            FROM chats_log
+            FROM telegram_user_bot.chats_log
             WHERE chat_id = {chat_id:Int64}
             ORDER BY date_time DESC
             LIMIT 1
@@ -128,7 +128,7 @@ async def save_deleted(event):
         try:
             message = clickhouse.query("""
             SELECT message
-            FROM chats_log
+            FROM telegram_user_bot.chats_log
             WHERE chat_id = {chat_id:Int64} and message_id = {message_id:Int64}
             LIMIT 1
             """, {'chat_id': event.chat_id, 'message_id': msg_id}).result_rows[0][0]
