@@ -7,11 +7,10 @@ class Config:
         self.api_hash = os.getenv('API_HASH')
         self.telephone = os.getenv('TELEPHONE')
         self.telephone2 = os.getenv('TELEPHONE2')
-        self.db_user = os.getenv("DB_USER")
-        self.db_password = os.getenv("DB_PASSWORD")
-        self.db_host = os.getenv("DB_HOST")
-        self.db_database = os.getenv("DB_DATABASE")
-        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+        self.db_user = os.getenv("CLICKHOUSEUSER")
+        self.db_password = os.getenv("CLICKHOUSE_PASSWORD")
+        self.db_host = os.getenv("CLICKHOUSE_HOST")
+        self.db_database = os.getenv("CLICKHOUSE_DATABASE")
 
 
 config = Config()
