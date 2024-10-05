@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask
+from flask import Flask, jsonify
 from telethon import events
 
 from config import config
@@ -13,7 +13,9 @@ from TelegramUtils import create_telegram_client
 app = Flask(__name__)
 @app.route("/health")
 def health():
-    return
+    resp = jsonify(health="healthy")
+    resp.status_code = 200
+    return resp
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -32,4 +34,5 @@ if __name__ == '__main__':
                           events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
     client2.add_event_handler(deleted,
                           events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
-    app.run(host='0.0.0.0', port=80)
+    app.post = 80
+    client.run_until_disconnected()
