@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import threading
 
@@ -19,9 +20,9 @@ def health():
     return resp
 
 def run_flask():
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=config.port)
 
-def run_telegram_clients():
+async def run_telegram_clients():
     client = create_telegram_client('session/alex', config.telephone)
     client2 = create_telegram_client('session/alex2', config.telephone2)
 
@@ -37,25 +38,24 @@ def run_telegram_clients():
     client2.add_event_handler(deleted, events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
     client2.add_event_handler(deleted, events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
 
-    # Запускаем клиентов и блокируем поток до их завершения
-    client.start()
-    client2.start()
+    # Запускаем клиентов
+    await client.start()
+    await client2.start()
 
-    client.run_until_disconnected()
-    client2.run_until_disconnected()
+    # Блокируем цикл до завершения клиентов
+    await client.run_until_disconnected()
+    await client2.run_until_disconnected()
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.info('start application')
 
-    # Создаем потоки для Flask и Telegram клиентов
+    # Запускаем Flask в отдельном потоке
     flask_thread = threading.Thread(target=run_flask)
-    telegram_thread = threading.Thread(target=run_telegram_clients)
-
-    # Запускаем потоки
     flask_thread.start()
-    telegram_thread.start()
 
-    # Ожидаем завершения потоков
-    flask_thread.join()
-    telegram_thread.join()
+    # Запускаем Telegram клиентов в asyncio
+    asyncio.run(run_telegram_clients())
+
+if __name__ == '__main__':
+    main()
