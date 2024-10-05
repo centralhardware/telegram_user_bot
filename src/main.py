@@ -26,3 +26,4 @@ client2.add_event_handler(deleted,
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.info('start application')
+    client.connect()
