@@ -1,5 +1,7 @@
 import logging
 
+from flask import Flask
+import app
 from telethon import events
 
 from config import config
@@ -8,6 +10,10 @@ from scrapper import save_outgoing, save_incoming, save_deleted
 from Top import top
 from Deleted import deleted
 from TelegramUtils import create_telegram_client
+
+@app.route("/health")
+def health():
+    return
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -26,4 +32,4 @@ if __name__ == '__main__':
                           events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
     client2.add_event_handler(deleted,
                           events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
-    client.run_until_disconnected()
+    app = Flask(__name__)
