@@ -20,7 +20,7 @@ def health():
     return resp
 
 def run_flask():
-    app.run(host='0.0.0.0', port=config.port)
+    app.run(host='0.0.0.0', port=80)
 
 async def run_telegram_clients():
     client = create_telegram_client('session/alex', config.telephone)
