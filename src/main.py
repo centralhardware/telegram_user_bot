@@ -26,3 +26,4 @@ if __name__ == '__main__':
                           events.NewMessage(outgoing=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
     client2.add_event_handler(deleted,
                           events.NewMessage(incoming=True, pattern='!deleted', forwards=False, chats=[-1001633660171]))
+    client.run_until_disconnected()
