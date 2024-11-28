@@ -1,5 +1,5 @@
 Telethon~= 1.38.1
-aiohttp~=3.11.7
+aiohttp~=3.11.8
 clickhouse_connect~=0.8.7
 termcolor~=2.5.0
 flask~=3.1.0
