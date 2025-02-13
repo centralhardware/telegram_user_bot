@@ -32,6 +32,8 @@ async def run_telegram_clients():
     # Запускаем клиентов
     await client.start()
 
+    await client.run_until_disconnected()
+
 def main():
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.info('start application')
