@@ -3,3 +3,4 @@ aiohttp~=3.11.16
 clickhouse_connect~=0.8.17
 termcolor~=3.0.1
 flask~=3.1.0
+APScheduler~=3.11.0
