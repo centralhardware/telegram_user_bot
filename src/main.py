@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import threading
+from asyncio import events
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from flask import Flask, jsonify
@@ -9,6 +10,8 @@ from flask import Flask, jsonify
 from TelegramUtils import create_telegram_client
 from admin_logs import fetch_channel_actions
 from config import config
+from notify_admins import notify_admins
+from scrapper import save_outgoing, save_deleted, save_incoming
 
 app = Flask(__name__)
 
@@ -27,10 +30,10 @@ def run_flask():
 async def run_telegram_clients():
     client = create_telegram_client('session/alex', config.telephone)
 
-    # client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
-    # client.add_event_handler(save_deleted, events.MessageDeleted())
-    # client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    # client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
+    client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
+    client.add_event_handler(save_deleted, events.MessageDeleted())
+    client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
+    client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
 
     scheduler = AsyncIOScheduler()
 
