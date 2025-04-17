@@ -43,6 +43,7 @@ async def run_telegram_clients():
         scheduler.add_job(fetch_channel_actions, 'interval', minutes=1, args=[client, chat_id])
 
     scheduler.start()
+    logging.getLogger('apscheduler').disabled = True
 
     # Запускаем клиентов
     await client.start()
