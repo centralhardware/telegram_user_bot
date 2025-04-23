@@ -44,8 +44,11 @@ async def fetch_channel_actions(client, chat_id):
             eid = entry.id
             user_id = getattr(entry.user_id, 'user_id', entry.user_id)
             action_type = type(entry.action).__name__
-            message = json.dumps(entry.action.to_dict(), default=str, ensure_ascii=False)
-
+            message = json.dumps(
+                {k: v for k, v in entry.action.to_dict().items() if v is not None},
+                default=str,
+                ensure_ascii=False
+)
             all_data.append([
                 eid,
                 chat_id,
