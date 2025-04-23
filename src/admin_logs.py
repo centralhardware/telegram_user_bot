@@ -45,7 +45,7 @@ async def fetch_channel_actions(client, chat_id):
             user_id = getattr(entry.user_id, 'user_id', entry.user_id)
             action_type = type(entry.action).__name__
             message = json.dumps(
-                {k: v for k, v in entry.action.to_dict().items() if v is not None},
+                remove_none(entry.action.to_dict()),
                 default=str,
                 ensure_ascii=False
 )
@@ -78,3 +78,11 @@ async def fetch_channel_actions(client, chat_id):
         logging.info(f"[{datetime.utcnow()}] [{chat_id}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
     else:
         logging.info(f"[{datetime.utcnow()}] [{chat_id}] No new entries.")
+
+def remove_none(d):
+    if isinstance(d, dict):
+        return {k: remove_none(v) for k, v in d.items() if v is not None}
+    elif isinstance(d, list):
+        return [remove_none(v) for v in d if v is not None]
+    else:
+        return d
