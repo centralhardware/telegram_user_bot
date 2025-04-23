@@ -79,10 +79,16 @@ async def fetch_channel_actions(client, chat_id):
     else:
         logging.info(f"[{datetime.utcnow()}] [{chat_id}] No new entries.")
 
-def remove_none(d):
-    if isinstance(d, dict):
-        return {k: remove_none(v) for k, v in d.items() if v is not None}
-    elif isinstance(d, list):
-        return [remove_none(v) for v in d if v is not None]
+def remove_empty_and_none(obj):
+    if isinstance(obj, dict):
+        cleaned = {
+            k: remove_empty_and_none(v)
+            for k, v in obj.items()
+            if v is not None
+        }
+        return {k: v for k, v in cleaned.items() if v not in (None, {}, [])}
+    elif isinstance(obj, list):
+        cleaned = [remove_empty_and_none(v) for v in obj if v is not None]
+        return [v for v in cleaned if v not in (None, {}, [])]
     else:
-        return d
+        return obj
