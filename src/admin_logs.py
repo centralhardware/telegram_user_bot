@@ -45,7 +45,7 @@ async def fetch_channel_actions(client, chat_id):
             user_id = getattr(entry.user_id, 'user_id', entry.user_id)
             action_type = type(entry.action).__name__
             message = json.dumps(
-                remove_none(entry.action.to_dict()),
+                remove_empty_and_none(entry.action.to_dict()),
                 default=str,
                 ensure_ascii=False
 )
