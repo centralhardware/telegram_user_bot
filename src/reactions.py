@@ -10,6 +10,7 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
                                            username=config.db_user, password=config.db_password,
                                            settings={'async_insert': '1', 'wait_for_async_insert': '0'})
 
+
 async def reaction_handler(event):
     if not isinstance(event, UpdateMessageReactions):
         return
@@ -18,37 +19,34 @@ async def reaction_handler(event):
     chat_id = getattr(event.peer, 'channel_id', None) or getattr(event.peer, 'chat_id', None)
     logging.info(f"📩 Message ID {msg_id} in Chat {chat_id} got updated reactions")
 
+    reaction_list = []
+    count_list = []
 
-    rows = []
     if not event.reactions or not event.reactions.results:
-        logging.info(f"❌ All reactions removed from message {msg_id} in chat {chat_id}")
-        rows.append([
-            msg_id,
-            chat_id,
-            '',
-            0,
-            datetime.utcnow()
-        ])
+        logging.info(" → All reactions removed")
     else:
         for reaction in event.reactions.results:
             reaction_str = getattr(reaction.reaction, 'emoticon', str(reaction.reaction))
+            reaction_str = reaction_str.encode('utf-16', 'surrogatepass').decode('utf-16')
             count = reaction.count
             logging.info(f" → Reaction: {reaction_str} × {count}")
-            rows.append([
-                msg_id,
-                chat_id,
-                reaction_str,
-                count,
-                datetime.utcnow()
-            ])
+            reaction_list.append(reaction_str)
+            count_list.append(count)
 
-    if rows:
-        clickhouse.insert('telegram_user_bot.telegram_reactions',
-                          rows,
-                          [
-                              'message_id',
-                              'chat_id',
-                              'reaction',
-                              'count',
-                              'date'
-                          ])
+    row = [[
+        msg_id,
+        chat_id,
+        reaction_list,
+        count_list,
+        datetime.utcnow()
+    ]]
+
+    clickhouse.insert('telegram_user_bot.reactions',
+                      row,
+                      [
+                          'message_id',
+                          'chat_id',
+                          'reactions',
+                          'counts',
+                          'date'
+                      ])
