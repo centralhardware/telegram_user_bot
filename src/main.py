@@ -12,7 +12,6 @@ from notify_admins import notify_admins
 from scrapper import save_outgoing, save_incoming, save_deleted
 from TelegramUtils import create_telegram_client
 from admin_logs import fetch_channel_actions
-from reactions import reaction_handler
 
 app = Flask(__name__)
 
@@ -35,7 +34,6 @@ async def run_telegram_clients():
     client.add_event_handler(save_deleted, events.MessageDeleted())
     client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
-    client.add_event_handler(reaction_handler, events.Raw)
 
     scheduler = AsyncIOScheduler()
 
