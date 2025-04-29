@@ -15,7 +15,7 @@ clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.
 def get_last_id_from_clickhouse(chat_id):
     result = clickhouse.query(f"""
         SELECT max(event_id) AS last_id
-        FROM telegram_user_bot.admin_actions
+        FROM telegram_user_bot.admin_actions2
         WHERE chat_id = %(chat_id)s
     """, parameters={"chat_id": chat_id}).result_rows
     return result[0][0] if result and result[0][0] is not None else 0
@@ -67,7 +67,7 @@ async def fetch_channel_actions(client, chat_id):
             max_id = max(e.id for e in events.events)
 
     if all_data:
-        clickhouse.insert('telegram_user_bot.admin_actions', all_data, [
+        clickhouse.insert('telegram_user_bot.admin_actions2', all_data, [
             'event_id',
             'chat_id',
             'action_type',
