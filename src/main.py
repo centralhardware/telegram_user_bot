@@ -43,7 +43,7 @@ async def run_telegram_clients():
     for chat_id in chat_ids:
         scheduler.add_job(fetch_channel_actions, 'interval', minutes=1, args=[client, chat_id])
 
-    scheduler.add_job(fetch_user_sessions, "interval", seconds=1, args=[client])
+    scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[client])
     scheduler.start()
 
     await client.start()
