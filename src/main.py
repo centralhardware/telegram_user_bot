@@ -12,6 +12,7 @@ from notify_admins import notify_admins
 from scrapper import save_outgoing, save_incoming, save_deleted
 from TelegramUtils import create_telegram_client
 from admin_logs import fetch_channel_actions
+from fetch_sessions import fetch_user_sessions
 
 app = Flask(__name__)
 
@@ -42,6 +43,7 @@ async def run_telegram_clients():
     for chat_id in chat_ids:
         scheduler.add_job(fetch_channel_actions, 'interval', minutes=1, args=[client, chat_id])
 
+    scheduler.add_job(fetch_user_sessions, "interval", seconds=1, args=[client])
     scheduler.start()
 
     await client.start()
