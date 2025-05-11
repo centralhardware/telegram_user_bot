@@ -59,23 +59,12 @@ async def save_outgoing(event):
     if chat_title == '':
         chat_title = chat_id[0]
     admins = await get_admins(event.chat, event.client)
-    if event.raw_text != '':
-        logging.info(f"outcoming {chat_title}: {event.raw_text} {admins}")
-        data = [[datetime.now(), event.raw_text, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id]]
-        clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
-                          ['date_time', 'message', 'title', 'usernames', 'id', 'admins2', 'message_id', 'reply_to'])
-    else:
-        try:
-            # Serialize message object to JSON when raw_text is empty
-            message_dict = remove_empty_and_none(event.message.to_dict())
-            message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
-            logging.info(f"outcoming {chat_title}: [empty raw_text, serialized to JSON]")
-            data = [[datetime.now(), message_json, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id]]
-            clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
-                              ['date_time', 'message', 'title', 'usernames', 'id', 'admins2', 'message_id', 'reply_to'])
-        except Exception as e:
-            logging.error(f"Error serializing empty message: {e}")
-            logging.info("ignore empty message")
+    message_dict = remove_empty_and_none(event.message.to_dict())
+                message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
+                logging.info(f"outcoming {chat_title}: [empty raw_text, serialized to JSON]")
+                data = [[datetime.now(), event.raw_text, message_json, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id]]
+                clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
+                                  ['date_time', 'message', 'raw',  'title', 'usernames', 'id', 'admins2', 'message_id', 'reply_to'])
 
 
 def save_inc(data):
@@ -90,6 +79,7 @@ def save_inc(data):
                        'user_id',
                        'message_id',
                        'message',
+                       'raw',
                        'reply_to'])
 
 
@@ -104,8 +94,7 @@ async def save_incoming(event):
 
     # Handle both empty and non-empty raw_text
     if event.raw_text != '':
-        logging.info(
-            f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
+
     else:
         logging.info(
             f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} [empty raw_text, serialized to JSON] reply to {event.message.reply_to_msg_id}")
