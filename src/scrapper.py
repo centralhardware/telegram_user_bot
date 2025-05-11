@@ -93,12 +93,12 @@ def save_del(data):
 async def save_incoming(event):
     if event.chat_id >= 0 or event.is_private is True or event.message.sender is None: return
 
-    # Handle both empty and non-empty raw_text
     if event.raw_text != '':
-
+        logging.info(
+                f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {event.raw_text} reply to {event.message.reply_to_msg_id}")
     else:
         logging.info(
-            f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} [empty raw_text, serialized to JSON] reply to {event.message.reply_to_msg_id}")
+                f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} [empty raw_text, serialized to JSON] reply to {event.message.reply_to_msg_id}")
 
     usernames = []
     if event.message.sender.username is not None:
