@@ -58,12 +58,13 @@ async def save_outgoing(event):
 
     if chat_title == '':
         chat_title = chat_id[0]
+
     admins = await get_admins(event.chat, event.client)
     message_dict = remove_empty_and_none(event.message.to_dict())
-                message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
-                logging.info(f"outcoming {chat_title}: [empty raw_text, serialized to JSON]")
-                data = [[datetime.now(), event.raw_text, message_json, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id]]
-                clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
+    message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
+    logging.info(f"outcoming {chat_title}: [empty raw_text, serialized to JSON]")
+    data = [[datetime.now(), event.raw_text, message_json, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id]]
+    clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
                                   ['date_time', 'message', 'raw',  'title', 'usernames', 'id', 'admins2', 'message_id', 'reply_to'])
 
 
