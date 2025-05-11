@@ -80,7 +80,6 @@ def save_inc(data):
                        'user_id',
                        'message_id',
                        'message',
-                       'raw',
                        'reply_to'])
 
 
