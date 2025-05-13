@@ -66,11 +66,11 @@ async def fetch_channel_actions(client, chat_id):
         else:
             max_id = max(e.id for e in events.events)
 
-        chat_username = (
-            channel.usernames[0].username
-            if channel.usernames and len(channel.usernames) > 0
-            else channel.username
-        )
+    chat_username = (
+        channel.usernames[0].username
+        if channel.usernames and len(channel.usernames) > 0
+        else channel.username
+    )
 
     if all_data:
         clickhouse.insert('telegram_user_bot.admin_actions2', all_data, [
