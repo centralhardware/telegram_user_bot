@@ -1,6 +1,6 @@
 Telethon~= 1.40.0
 aiohttp~=3.11.18
 clickhouse_connect~=0.8.17
-termcolor~=3.0.1
+termcolor~=3.1.0
 flask~=3.1.0
 APScheduler~=3.11.0
