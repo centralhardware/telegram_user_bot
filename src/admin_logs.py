@@ -27,6 +27,11 @@ async def fetch_channel_actions(client, chat_id):
     max_id = last_id
     new_last_id = last_id
     all_data = []
+    chat_username = (
+        channel.usernames[0].username
+        if channel.usernames and len(channel.usernames) > 0
+        else channel.username
+    )
 
     while True:
         events = await client(GetAdminLogRequest(
@@ -36,6 +41,16 @@ async def fetch_channel_actions(client, chat_id):
             max_id=0,
             limit=100
         ))
+
+        user_map = {}
+        for u in events.users:
+            usernames = []
+            if hasattr(u, "username") and u.username is not None:
+                usernames.append(u.username)
+            elif hasattr(u, "usernames") and u.usernames is not None:
+                for username in u.usernames:
+                    usernames.append(username.username)
+            user_map[u.id] = usernames
 
         if not events.events:
             break
@@ -48,14 +63,16 @@ async def fetch_channel_actions(client, chat_id):
                 remove_empty_and_none(entry.action.to_dict()),
                 default=str,
                 ensure_ascii=False
-)
+            )
             all_data.append([
                 eid,
                 chat_id,
                 action_type,
                 user_id or 0,
                 entry.date,
-                message
+                message,
+                chat_username,
+                user_map.get(user_id, [])
             ])
 
             if eid > new_last_id:
@@ -66,12 +83,6 @@ async def fetch_channel_actions(client, chat_id):
         else:
             max_id = max(e.id for e in events.events)
 
-    chat_username = (
-        channel.usernames[0].username
-        if channel.usernames and len(channel.usernames) > 0
-        else channel.username
-    )
-
     if all_data:
         clickhouse.insert('telegram_user_bot.admin_actions2', all_data, [
             'event_id',
@@ -79,7 +90,9 @@ async def fetch_channel_actions(client, chat_id):
             'action_type',
             'user_id',
             'date',
-            'message'
+            'message',
+            'chat_name',
+            'usernames'
         ])
         logging.info(f"[{chat_username}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
     else:
