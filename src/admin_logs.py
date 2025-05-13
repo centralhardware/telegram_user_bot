@@ -66,6 +66,11 @@ async def fetch_channel_actions(client, chat_id):
         else:
             max_id = max(e.id for e in events.events)
 
+    if len(channel.usernames) > 0:
+        chat_username = channel.usernames[0].username
+    else:
+        chat_username = channel.username
+
     if all_data:
         clickhouse.insert('telegram_user_bot.admin_actions2', all_data, [
             'event_id',
@@ -75,9 +80,9 @@ async def fetch_channel_actions(client, chat_id):
             'date',
             'message'
         ])
-        logging.info(f"[{datetime.utcnow()}] [{chat_id}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
+        logging.info(f"[{chat_username}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
     else:
-        logging.info(f"[{datetime.utcnow()}] [{chat_id}] No new entries.")
+        logging.info(f"[{fetch_channel_actions()}] No new entries.")
 
 def remove_empty_and_none(obj):
     if isinstance(obj, dict):
