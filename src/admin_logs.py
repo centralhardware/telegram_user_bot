@@ -1,6 +1,5 @@
 import json
 import logging
-from datetime import datetime
 
 import clickhouse_connect
 from telethon.tl.functions.channels import GetAdminLogRequest
@@ -27,11 +26,6 @@ async def fetch_channel_actions(client, chat_id):
     max_id = last_id
     new_last_id = last_id
     all_data = []
-    chat_username = (
-        channel.usernames[0].username
-        if channel.usernames and len(channel.usernames) > 0
-        else channel.username
-    )
 
     while True:
         events = await client(GetAdminLogRequest(
@@ -42,6 +36,9 @@ async def fetch_channel_actions(client, chat_id):
             limit=100
         ))
 
+        if not events.events:
+            break
+
         user_map = {}
         for u in events.users:
             usernames = []
@@ -49,11 +46,17 @@ async def fetch_channel_actions(client, chat_id):
                 usernames.append(u.username)
             elif hasattr(u, "usernames") and u.usernames is not None:
                 for username in u.usernames:
-                    usernames.append(username.username)
-            user_map[u.id] = usernames
+                    usernames.append(username)
+                    user_map[u.id] = usernames
 
-        if not events.events:
-            break
+
+        chat = events.chats[0]
+        usernames = []
+        if hasattr(chat, "username") and chat.username is not None:
+            usernames.append(chat.username)
+        elif hasattr(chat, "usernames") and chat.usernames is not None:
+            for username in chat.usernames:
+                usernames.append(username)
 
         for entry in events.events:
             eid = entry.id
@@ -71,8 +74,8 @@ async def fetch_channel_actions(client, chat_id):
                 user_id or 0,
                 entry.date,
                 message,
-                chat_username,
-                user_map.get(user_id, [])
+                user_map.get(user_id, []),
+                usernames
             ])
 
             if eid > new_last_id:
@@ -91,12 +94,10 @@ async def fetch_channel_actions(client, chat_id):
             'user_id',
             'date',
             'message',
-            'chat_name',
-            'usernames'
+            'usernames',
+            'chat_usernames'
         ])
-        logging.info(f"[{chat_username}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
-    else:
-        logging.info(f"[{chat_username}] No new entries.")
+        logging.info(f"[{usernames}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
 
 def remove_empty_and_none(obj):
     if isinstance(obj, dict):
