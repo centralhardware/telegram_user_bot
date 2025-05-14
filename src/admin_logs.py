@@ -39,15 +39,17 @@ async def fetch_channel_actions(client, chat_id):
         if not events.events:
             break
 
-        user_map = {}
+        usernames_map = {}
+        title_map = {}
         for u in events.users:
+            title_map[u.id] = u.first_name + ' ' + u.last_name
             usernames = []
             if hasattr(u, "username") and u.username is not None:
                 usernames.append(u.username)
             elif hasattr(u, "usernames") and u.usernames is not None:
                 for username in u.usernames:
                     usernames.append(username.username)
-                    user_map[u.id] = usernames
+                    usernames_map[u.id] = usernames
 
 
         chat = events.chats[0]
@@ -74,9 +76,10 @@ async def fetch_channel_actions(client, chat_id):
                 user_id or 0,
                 entry.date,
                 message,
-                user_map.get(user_id, []),
+                usernames_map.get(user_id, []),
                 usernames,
-                channel.title
+                channel.title,
+                title_map.get(user_id, '')
             ])
 
             if eid > new_last_id:
@@ -97,7 +100,8 @@ async def fetch_channel_actions(client, chat_id):
             'message',
             'usernames',
             'chat_usernames',
-            'chat_title'
+            'chat_title',
+            'user_title'
         ])
         logging.info(f"[{usernames}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
 
