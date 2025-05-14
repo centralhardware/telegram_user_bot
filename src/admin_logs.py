@@ -103,7 +103,7 @@ async def fetch_channel_actions(client, chat_id):
             'chat_title',
             'user_title'
         ])
-        logging.info(f"[{usernames}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
+        logging.info(f"[{channel.title}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
 
 def remove_empty_and_none(obj):
     if isinstance(obj, dict):
