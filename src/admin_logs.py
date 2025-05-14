@@ -75,7 +75,8 @@ async def fetch_channel_actions(client, chat_id):
                 entry.date,
                 message,
                 user_map.get(user_id, []),
-                usernames
+                usernames,
+                channel.title
             ])
 
             if eid > new_last_id:
@@ -95,7 +96,8 @@ async def fetch_channel_actions(client, chat_id):
             'date',
             'message',
             'usernames',
-            'chat_usernames'
+            'chat_usernames',
+            'chat_title'
         ])
         logging.info(f"[{usernames}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
 
