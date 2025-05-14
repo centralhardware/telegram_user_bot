@@ -42,7 +42,7 @@ async def fetch_channel_actions(client, chat_id):
         usernames_map = {}
         title_map = {}
         for u in events.users:
-            title_map[u.id] = u.first_name + ' ' + u.last_name
+            title_map[u.id] = f"{u.first_name or ''} {u.last_name or ''}".strip()
             usernames = []
             if hasattr(u, "username") and u.username is not None:
                 usernames.append(u.username)
