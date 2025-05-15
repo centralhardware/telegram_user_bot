@@ -78,7 +78,7 @@ async def fetch_channel_actions(client, chat_id):
                 user_id or 0,
                 entry.date,
                 message,
-                usernames_map.get(user_id) or chat_map.get(entry.channel_id, []),
+                usernames_map.get(user_id) or chat_map.get(user_id, []),
                 chat_map.get(channel.id, []),
                 channel.title,
                 title_map.get(user_id, '')
