@@ -52,14 +52,15 @@ async def fetch_channel_actions(client, chat_id):
             usernames_map[u.id] = usernames
 
 
-        if len(events.chats) > 0:
-            chat = events.chats[0]
-            usernames = []
+        chat_map = {}
+        for chat in events.chats:
+            chat_usernames = []
             if hasattr(chat, "username") and chat.username is not None:
-                usernames.append(chat.username)
+                chat_usernames.append(chat.username)
             elif hasattr(chat, "usernames") and chat.usernames is not None:
                 for username in chat.usernames:
-                    usernames.append(username.username)
+                    chat_usernames.append(username.username)
+            chat_map[chat.id] = chat_usernames
 
         for entry in events.events:
             eid = entry.id
@@ -77,8 +78,8 @@ async def fetch_channel_actions(client, chat_id):
                 user_id or 0,
                 entry.date,
                 message,
-                usernames_map.get(user_id, []),
-                usernames,
+                usernames_map.get(user_id) or chat_map.get(entry.channel_id, []),
+                chat_map.get(channel.id, []),
                 channel.title,
                 title_map.get(user_id, '')
             ])
