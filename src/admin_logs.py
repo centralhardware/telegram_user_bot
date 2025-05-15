@@ -23,6 +23,12 @@ def get_last_id_from_clickhouse(chat_id):
 async def fetch_channel_actions(client, chat_id):
     last_id = get_last_id_from_clickhouse(chat_id)
     channel = await client.get_entity(chat_id)
+    chat_usernames = []
+    if hasattr(channel, "username") and channel.username is not None:
+        chat_usernames.append(channel.username)
+    elif hasattr(channel, "usernames") and channel.usernames is not None:
+        for username in channel.usernames:
+            chat_usernames.append(username.username)
     max_id = last_id
     new_last_id = last_id
     all_data = []
@@ -79,7 +85,7 @@ async def fetch_channel_actions(client, chat_id):
                 entry.date,
                 message,
                 usernames_map.get(user_id) or chat_map.get(user_id, []),
-                chat_map.get(channel.id, []),
+                chat_usernames,
                 channel.title,
                 title_map.get(user_id, '')
             ])
