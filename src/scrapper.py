@@ -3,7 +3,6 @@ import logging
 from datetime import datetime
 
 import clickhouse_connect
-from termcolor import colored
 
 from admin_utils import get_admins
 from config import config
@@ -162,4 +161,4 @@ async def save_deleted(event):
         except Exception:
             message = msg_id
 
-        logging.info(colored(f" Deleted {chat_title} {msg_id} {message}", 'yellow'))
+        logging.info(f" Deleted {chat_title} {msg_id} {message}")
