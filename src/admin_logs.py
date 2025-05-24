@@ -60,13 +60,13 @@ async def fetch_channel_actions(client, chat_id):
 
         chat_map = {}
         for chat in events.chats:
-            chat_usernames = []
+            usernames = []
             if hasattr(chat, "username") and chat.username is not None:
-                chat_usernames.append(chat.username)
+                usernames.append(chat.username)
             elif hasattr(chat, "usernames") and chat.usernames is not None:
                 for username in chat.usernames:
-                    chat_usernames.append(username.username)
-            chat_map[chat.id] = chat_usernames
+                    usernames.append(username.username)
+            chat_map[chat.id] = usernames
 
         for entry in events.events:
             eid = entry.id
