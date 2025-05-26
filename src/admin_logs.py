@@ -71,7 +71,7 @@ async def fetch_channel_actions(client, chat_id):
         for entry in events.events:
             eid = entry.id
             user_id = getattr(entry.user_id, 'user_id', entry.user_id)
-            action_type = type(entry.action).__name__.removeprefix('ChannelAdminLogEventActionParticipant')
+            action_type = type(entry.action).__name__.removeprefix('ChannelAdminLogEventAction')
             message = json.dumps(
                 remove_empty_and_none(entry.action.to_dict()),
                 default=str,
