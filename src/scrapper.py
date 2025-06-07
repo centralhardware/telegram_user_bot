@@ -2,11 +2,10 @@ import json
 import logging
 from datetime import datetime
 
-import clickhouse_connect
-
 from admin_utils import get_admins
 from config import config
 from username_utils import extract_usernames
+from clickhouse_utils import get_clickhouse_client
 
 
 def remove_empty_and_none(obj):
@@ -24,9 +23,7 @@ def remove_empty_and_none(obj):
         return obj
 
 
-clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
-                                           username=config.db_user, password=config.db_password,
-                                           settings={'async_insert': '1', 'wait_for_async_insert': '0'})
+clickhouse = get_clickhouse_client()
 
 
 async def save_outgoing(event):

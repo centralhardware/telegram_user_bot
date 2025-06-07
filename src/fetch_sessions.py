@@ -1,19 +1,12 @@
 import logging
 from datetime import datetime
 
-import clickhouse_connect
 from telethon.tl.functions.account import GetAuthorizationsRequest
 
 from config import config
+from clickhouse_utils import get_clickhouse_client
 
-clickhouse = clickhouse_connect.get_client(
-    host=config.db_host,
-    database=config.db_database,
-    port=8123,
-    username=config.db_user,
-    password=config.db_password,
-    settings={'async_insert': '1', 'wait_for_async_insert': '0'}
-)
+clickhouse = get_clickhouse_client()
 
 
 async def fetch_user_sessions(client):
