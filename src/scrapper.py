@@ -1,5 +1,7 @@
 import json
 import logging
+
+logger = logging.getLogger(__name__)
 from datetime import datetime
 
 from admin_utils import get_admins
@@ -48,7 +50,7 @@ async def save_outgoing(event):
     admins = await get_admins(event.chat, event.client)
     message_dict = remove_empty_and_none(event.message.to_dict())
     message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
-    logging.info(f"outcoming {chat_title}: {event.raw_text}")
+    logger.info(f"outgoing {chat_title}: {event.raw_text}")
     data = [[datetime.now(), event.raw_text, message_json, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id or 0]]
     clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
                                   ['date_time', 'message', 'raw',  'title', 'usernames', 'id', 'admins2', 'message_id', 'reply_to'])
@@ -95,10 +97,10 @@ async def save_incoming(event):
             message_dict = remove_empty_and_none(event.message.to_dict())
             message_content = json.dumps(message_dict, default=str, ensure_ascii=False)
         except Exception as e:
-            logging.error(f"Error serializing empty incoming message: {e}")
+            logger.error(f"Error serializing empty incoming message: {e}")
             message_content = "[Error serializing message]"
 
-    logging.info(
+    logger.info(
         f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {message_content} reply to {event.message.reply_to_msg_id}")
 
     save_inc([[
@@ -143,4 +145,4 @@ async def save_deleted(event):
         except Exception:
             message = msg_id
 
-        logging.info(f" Deleted {chat_title} {msg_id} {message}")
+        logger.info(f"Deleted {chat_title} {msg_id} {message}")
