@@ -184,4 +184,9 @@ async def save_deleted(event):
         except Exception:
             message = msg_id
 
-        logging.info(f" Deleted {chat_title} {msg_id} {message}")
+        logging.info(
+            "deleted  %12d %-25s %s",
+            msg_id,
+            str(chat_title)[:20],
+            message,
+        )
