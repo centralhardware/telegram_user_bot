@@ -8,14 +8,12 @@ from flask import Flask, jsonify
 from telethon import events
 
 from config import config
-from logging_config import setup_logging
 from notify_admins import notify_admins
 from scrapper import save_outgoing, save_incoming, save_deleted
 from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
 
-logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 
@@ -56,9 +54,9 @@ async def run_telegram_clients():
 
 
 def main():
-    setup_logging()
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    logger.info('start application')
+    logging.info('start application')
 
     # Запускаем Flask в отдельном потоке
     flask_thread = threading.Thread(target=run_flask)
