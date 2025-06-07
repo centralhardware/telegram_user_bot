@@ -14,6 +14,6 @@ def get_clickhouse_client():
             port=8123,
             username=config.db_user,
             password=config.db_password,
-            settings={'async_insert': '1', 'wait_for_async_insert': '0'}
+            settings={"async_insert": "1", "wait_for_async_insert": "0"},
         )
     return _clickhouse_client

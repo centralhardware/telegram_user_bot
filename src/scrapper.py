@@ -3,7 +3,6 @@ import logging
 from datetime import datetime
 
 from admin_utils import get_admins
-from config import config
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none
@@ -12,12 +11,16 @@ clickhouse = get_clickhouse_client()
 
 
 async def save_outgoing(event):
-    chat_title = ''
+    chat_title = ""
 
     if hasattr(event.chat, "title"):
         chat_title = event.chat.title
     else:
-        if event.chat is not None and event.chat.bot and hasattr(event.chat, "first_name"):
+        if (
+            event.chat is not None
+            and event.chat.bot
+            and hasattr(event.chat, "first_name")
+        ):
             chat_title = event.chat.first_name
 
     chat = await event.get_chat()
@@ -25,43 +28,74 @@ async def save_outgoing(event):
 
     if hasattr(chat, "first_name"):
         last_name = chat.last_name if chat.last_name is not None else ""
-        chat_title = chat.first_name + ' ' + last_name
+        chat_title = chat.first_name + " " + last_name
 
-    if chat_title == '':
+    if chat_title == "":
         chat_title = chat_id[0]
 
     admins = await get_admins(event.chat, event.client)
     message_dict = remove_empty_and_none(event.message.to_dict())
     message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
     logging.info(f"outcoming {chat_title}: {event.raw_text}")
-    data = [[datetime.now(), event.raw_text, message_json, chat_title, chat_id, event.chat_id, admins, event.message.id, event.message.reply_to_msg_id or 0]]
-    clickhouse.insert('telegram_user_bot.telegram_messages_new', data,
-                                  ['date_time', 'message', 'raw',  'title', 'usernames', 'id', 'admins2', 'message_id', 'reply_to'])
+    data = [
+        [
+            datetime.now(),
+            event.raw_text,
+            message_json,
+            chat_title,
+            chat_id,
+            event.chat_id,
+            admins,
+            event.message.id,
+            event.message.reply_to_msg_id or 0,
+        ]
+    ]
+    clickhouse.insert(
+        "telegram_user_bot.telegram_messages_new",
+        data,
+        [
+            "date_time",
+            "message",
+            "raw",
+            "title",
+            "usernames",
+            "id",
+            "admins2",
+            "message_id",
+            "reply_to",
+        ],
+    )
 
 
 def save_inc(data):
-    clickhouse.insert('telegram_user_bot.chats_log', data,
-                      ['date_time',
-                       'chat_title',
-                       'chat_id',
-                       'username',
-                       'chat_usernames',
-                       'first_name',
-                       'second_name',
-                       'user_id',
-                       'message_id',
-                       'message',
-                       'reply_to'])
+    clickhouse.insert(
+        "telegram_user_bot.chats_log",
+        data,
+        [
+            "date_time",
+            "chat_title",
+            "chat_id",
+            "username",
+            "chat_usernames",
+            "first_name",
+            "second_name",
+            "user_id",
+            "message_id",
+            "message",
+            "reply_to",
+        ],
+    )
 
 
 def save_del(data):
-    clickhouse.insert('telegram_user_bot.deleted_log',
-                      data,
-                      ['date_time', 'chat_id', 'message_id'])
+    clickhouse.insert(
+        "telegram_user_bot.deleted_log", data, ["date_time", "chat_id", "message_id"]
+    )
 
 
 async def save_incoming(event):
-    if event.chat_id >= 0 or event.is_private is True or event.message.sender is None: return
+    if event.chat_id >= 0 or event.is_private is True or event.message.sender is None:
+        return
 
     usernames = extract_usernames(event.message.sender)
     chat_usernames = extract_usernames(event.chat)
@@ -74,7 +108,7 @@ async def save_incoming(event):
 
     # Prepare message content - either raw_text or JSON serialized message
     message_content = event.raw_text
-    if event.raw_text == '':
+    if event.raw_text == "":
         try:
             # Serialize message object to JSON when raw_text is empty
             message_dict = remove_empty_and_none(event.message.to_dict())
@@ -84,47 +118,63 @@ async def save_incoming(event):
             message_content = "[Error serializing message]"
 
     logging.info(
-        f"incoming {event.message.id:12,} {event.chat.title[:20]:<25s} {message_content} reply to {event.message.reply_to_msg_id}")
-
-    save_inc([[
-        datetime.now(),
-        event.chat.title,
-        event.chat_id,
-        usernames,
-        chat_usernames,
-        first_name,
-        last_name,
-        event.message.sender.id,
+        "incoming %12d %-25s %s reply to %s",
         event.message.id,
+        event.chat.title[:20],
         message_content,
-        event.message.reply_to_msg_id
-    ]])
+        event.message.reply_to_msg_id,
+    )
+
+    save_inc(
+        [
+            [
+                datetime.now(),
+                event.chat.title,
+                event.chat_id,
+                usernames,
+                chat_usernames,
+                first_name,
+                last_name,
+                event.message.sender.id,
+                event.message.id,
+                message_content,
+                event.message.reply_to_msg_id,
+            ]
+        ]
+    )
 
 
 async def save_deleted(event):
-    if event.chat_id is None: return
+    if event.chat_id is None:
+        return
 
     for msg_id in event.deleted_ids:
         save_del([[datetime.now(), event.chat_id, msg_id]])
 
         try:
-            chat_title = clickhouse.query("""
+            chat_title = clickhouse.query(
+                """
             SELECT chat_title
             FROM telegram_user_bot.chats_log
             WHERE chat_id = {chat_id:Int64}
             ORDER BY date_time DESC
             LIMIT 1
-            """, {'chat_id': event.chat_id}).result_rows[0][0]
+            """,
+                {"chat_id": event.chat_id},
+            ).result_rows[0][0]
         except Exception:
             chat_title = event.chat_id
 
         try:
-            message = clickhouse.query("""
+            message = clickhouse.query(
+                """
             SELECT message
             FROM telegram_user_bot.chats_log
             WHERE chat_id = {chat_id:Int64} and message_id = {message_id:Int64}
             LIMIT 1
-            """, {'chat_id': event.chat_id, 'message_id': msg_id}).result_rows[0][0]
+            """,
+                {"chat_id": event.chat_id, "message_id": msg_id},
+            ).result_rows[0][0]
         except Exception:
             message = msg_id
 

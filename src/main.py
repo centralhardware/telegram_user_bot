@@ -27,23 +27,29 @@ def health():
 def run_flask():
     # Disable default werkzeug request logging
     logging.getLogger("werkzeug").setLevel(logging.WARNING)
-    app.run(host='0.0.0.0', port=80, use_reloader=False)
+    app.run(host="0.0.0.0", port=80, use_reloader=False)
 
 
 async def run_telegram_clients():
-    client = TelegramClient('session/alex', config.api_id, config.api_hash)
+    client = TelegramClient("session/alex", config.api_id, config.api_hash)
 
     client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     client.add_event_handler(save_deleted, events.MessageDeleted())
     client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    client.add_event_handler(notify_admins, events.NewMessage(outgoing=True, pattern='!n', forwards=False))
+    client.add_event_handler(
+        notify_admins, events.NewMessage(outgoing=True, pattern="!n", forwards=False)
+    )
 
     scheduler = AsyncIOScheduler()
 
     chat_ids_str = os.getenv("TELEGRAM_CHAT_IDS", "")
-    chat_ids = [int(cid.strip()) for cid in chat_ids_str.split(",") if cid.strip().isdigit()]
+    chat_ids = [
+        int(cid.strip()) for cid in chat_ids_str.split(",") if cid.strip().isdigit()
+    ]
     for chat_id in chat_ids:
-        scheduler.add_job(fetch_channel_actions, 'interval', minutes=1, args=[client, chat_id])
+        scheduler.add_job(
+            fetch_channel_actions, "interval", minutes=1, args=[client, chat_id]
+        )
 
     scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[client])
     scheduler.start()
@@ -54,9 +60,9 @@ async def run_telegram_clients():
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    logging.info('start application')
+    logging.info("start application")
 
     # Запускаем Flask в отдельном потоке
     flask_thread = threading.Thread(target=run_flask)
@@ -65,5 +71,6 @@ def main():
     # Запускаем Telegram клиентов в asyncio
     asyncio.run(run_telegram_clients())
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

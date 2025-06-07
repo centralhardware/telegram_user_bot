@@ -17,11 +17,15 @@ async def notify_admins(event):
     admins_list = await get_admins(event.chat, event.client, notify_count)
 
     if admins_list:
-        logging.info(f"Notify {notify_count} admins in {event.chat.title} ({admins_list})")
+        logging.info(
+            f"Notify {notify_count} admins in {event.chat.title} ({admins_list})"
+        )
         await event.client.delete_messages(event.chat, message_ids=[event.message.id])
         msg = ", ".join(admins_list)
 
         if event.message.reply_to_msg_id:
-            await event.client.send_message(event.chat, msg, reply_to=event.message.reply_to_msg_id)
+            await event.client.send_message(
+                event.chat, msg, reply_to=event.message.reply_to_msg_id
+            )
         else:
             await event.client.send_message(event.chat, msg)

@@ -15,4 +15,3 @@ def extract_usernames(entity) -> List[str]:
             elif hasattr(username, "username") and username.username:
                 usernames.append(username.username)
     return usernames
-
