@@ -1,6 +1,4 @@
 import logging
-
-logger = logging.getLogger(__name__)
 from datetime import datetime
 
 from telethon.tl.functions.account import GetAuthorizationsRequest
@@ -51,6 +49,6 @@ async def fetch_user_sessions(client):
             'date_active',
             'updated_at'
         ])
-        logger.info(f"[{now}] Inserted {len(all_data)} session entries.")
+        logging.info(f"[{now}] Inserted {len(all_data)} session entries.")
     else:
-        logger.info(f"[{now}] No active sessions found.")
+        logging.info(f"[{now}] No active sessions found.")

@@ -1,8 +1,6 @@
 import json
 import logging
 
-logger = logging.getLogger(__name__)
-
 from telethon.tl.functions.channels import GetAdminLogRequest
 
 from config import config
@@ -95,7 +93,7 @@ async def fetch_channel_actions(client, chat_id):
             'chat_title',
             'user_title'
         ])
-        logger.info(f"[{channel.title}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
+        logging.info(f"[{channel.title}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
 
 def remove_empty_and_none(obj):
     if isinstance(obj, dict):
