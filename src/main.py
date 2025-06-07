@@ -10,7 +10,7 @@ from telethon import events
 from config import config
 from notify_admins import notify_admins
 from scrapper import save_outgoing, save_incoming, save_deleted
-from TelegramUtils import create_telegram_client
+from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
 
@@ -31,7 +31,7 @@ def run_flask():
 
 
 async def run_telegram_clients():
-    client = create_telegram_client('session/alex', config.telephone)
+    client = TelegramClient('session/alex', config.api_id, config.api_hash)
 
     client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     client.add_event_handler(save_deleted, events.MessageDeleted())
@@ -48,7 +48,7 @@ async def run_telegram_clients():
     scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[client])
     scheduler.start()
 
-    await client.start()
+    await client.start(phone=config.telephone)
 
     await client.run_until_disconnected()
 
