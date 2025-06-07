@@ -5,6 +5,7 @@ import clickhouse_connect
 from telethon.tl.functions.channels import GetAdminLogRequest
 
 from config import config
+from username_utils import extract_usernames
 
 clickhouse = clickhouse_connect.get_client(host=config.db_host, database=config.db_database, port=8123,
                                            username=config.db_user, password=config.db_password,
@@ -23,12 +24,7 @@ def get_last_id_from_clickhouse(chat_id):
 async def fetch_channel_actions(client, chat_id):
     last_id = get_last_id_from_clickhouse(chat_id)
     channel = await client.get_entity(chat_id)
-    chat_usernames = []
-    if hasattr(channel, "username") and channel.username is not None:
-        chat_usernames.append(channel.username)
-    elif hasattr(channel, "usernames") and channel.usernames is not None:
-        for username in channel.usernames:
-            chat_usernames.append(username.username)
+    chat_usernames = extract_usernames(channel)
     max_id = last_id
     new_last_id = last_id
     all_data = []
@@ -49,24 +45,12 @@ async def fetch_channel_actions(client, chat_id):
         title_map = {}
         for u in events.users:
             title_map[u.id] = f"{u.first_name or ''} {u.last_name or ''}".strip()
-            usernames = []
-            if hasattr(u, "username") and u.username is not None:
-                usernames.append(u.username)
-            elif hasattr(u, "usernames") and u.usernames is not None:
-                for username in u.usernames:
-                    usernames.append(username.username)
-            usernames_map[u.id] = usernames
+            usernames_map[u.id] = extract_usernames(u)
 
 
         chat_map = {}
         for chat in events.chats:
-            usernames = []
-            if hasattr(chat, "username") and chat.username is not None:
-                usernames.append(chat.username)
-            elif hasattr(chat, "usernames") and chat.usernames is not None:
-                for username in chat.usernames:
-                    usernames.append(username.username)
-            chat_map[chat.id] = usernames
+            chat_map[chat.id] = extract_usernames(chat)
 
         for entry in events.events:
             eid = entry.id

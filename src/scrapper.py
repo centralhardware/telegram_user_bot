@@ -6,17 +6,7 @@ import clickhouse_connect
 
 from admin_utils import get_admins
 from config import config
-
-
-# Extracted utility function
-def build_usernames_from_chat(chat):
-    chat_usernames = []
-    if hasattr(chat, "username") and chat.username is not None:
-        chat_usernames.append(chat.username)
-    elif hasattr(chat, "usernames") and chat.usernames is not None:
-        for u in chat.usernames:
-            chat_usernames.append(u.username)
-    return chat_usernames
+from username_utils import extract_usernames
 
 
 def remove_empty_and_none(obj):
@@ -49,7 +39,7 @@ async def save_outgoing(event):
             chat_title = event.chat.first_name
 
     chat = await event.get_chat()
-    chat_id = build_usernames_from_chat(chat)
+    chat_id = extract_usernames(chat)
 
     if hasattr(chat, "first_name"):
         last_name = chat.last_name if chat.last_name is not None else ""
@@ -91,13 +81,8 @@ def save_del(data):
 async def save_incoming(event):
     if event.chat_id >= 0 or event.is_private is True or event.message.sender is None: return
 
-    usernames = []
-    if event.message.sender.username is not None:
-        usernames.append(event.message.sender.username)
-    elif event.message.sender.usernames is not None:
-        for u in event.message.sender.usernames:
-            usernames.append(u.username)
-    chat_usernames = build_usernames_from_chat(event.chat)
+    usernames = extract_usernames(event.message.sender)
+    chat_usernames = extract_usernames(event.chat)
     try:
         first_name = event.message.sender.first_name
         last_name = event.message.sender.last_name

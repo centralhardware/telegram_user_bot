@@ -1,11 +1,12 @@
 from telethon.tl.types import ChatParticipantCreator
 
+from username_utils import extract_usernames
+
 
 def build_username(user):
-    if user.username is not None:
-        return "@" + user.username
-    else:
-        return "@" + user.usernames[0].username
+    """Return formatted username for a user."""
+    usernames = extract_usernames(user)
+    return f"@{usernames[0]}" if usernames else ""
 
 
 # The function retrieves administrators from a chat
