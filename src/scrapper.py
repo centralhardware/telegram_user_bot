@@ -36,7 +36,13 @@ async def save_outgoing(event):
     admins = await get_admins(event.chat, event.client)
     message_dict = remove_empty_and_none(event.message.to_dict())
     message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
-    logging.info(f"outcoming {chat_title}: {event.raw_text}")
+    logging.info(
+        "outcoming %12d %-25s %s reply to %s",
+        event.message.id,
+        chat_title[:20],
+        event.raw_text,
+        event.message.reply_to_msg_id,
+    )
     data = [
         [
             datetime.now(),
