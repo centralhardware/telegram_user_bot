@@ -16,7 +16,10 @@ async def get_admins(chat, client, limit=50):
         try:
             if user.bot:
                 continue
-            if isinstance(user.participant, ChatParticipantCreator) or user.participant.admin_rights.delete_messages:
+            if (
+                isinstance(user.participant, ChatParticipantCreator)
+                or user.participant.admin_rights.delete_messages
+            ):
                 admins.append(build_username(user))
         except Exception:
             pass
