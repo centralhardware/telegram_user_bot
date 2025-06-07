@@ -6,22 +6,7 @@ from admin_utils import get_admins
 from config import config
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
-
-
-def remove_empty_and_none(obj):
-    if isinstance(obj, dict):
-        cleaned = {
-            k: remove_empty_and_none(v)
-            for k, v in obj.items()
-            if v is not None
-        }
-        return {k: v for k, v in cleaned.items() if v not in (None, {}, [])}
-    elif isinstance(obj, list):
-        cleaned = [remove_empty_and_none(v) for v in obj if v is not None]
-        return [v for v in cleaned if v not in (None, {}, [])]
-    else:
-        return obj
-
+from utils import remove_empty_and_none
 
 clickhouse = get_clickhouse_client()
 
