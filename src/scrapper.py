@@ -37,7 +37,7 @@ async def save_outgoing(event):
     message_dict = remove_empty_and_none(event.message.to_dict())
     message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
     logging.info(
-        "outcoming %12d %-25s %s reply to %s",
+        "outgoing %12d %-25s %s reply to %s",
         event.message.id,
         chat_title[:20],
         event.raw_text,
