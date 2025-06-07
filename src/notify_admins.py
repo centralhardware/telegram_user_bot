@@ -2,11 +2,14 @@ import logging
 from admin_utils import get_admins
 
 
-def _get_notify_count(raw_text):
+def _get_notify_count(raw_text: str) -> int:
+    """Parse the ``!n`` command and return number of admins to notify."""
     if raw_text == "!n":
         return 1
-    else:
+    try:
         return int(raw_text.replace("!n", ""))
+    except ValueError:
+        return 1
 
 
 async def notify_admins(event):

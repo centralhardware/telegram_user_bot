@@ -6,6 +6,7 @@ from telethon.tl.functions.channels import GetAdminLogRequest
 from config import config
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
+from utils import remove_empty_and_none
 
 clickhouse = get_clickhouse_client()
 
@@ -93,18 +94,6 @@ async def fetch_channel_actions(client, chat_id):
             'chat_title',
             'user_title'
         ])
-        logging.info(f"[{channel.title}] Inserted {len(all_data)} entries. Last ID: {new_last_id}")
-
-def remove_empty_and_none(obj):
-    if isinstance(obj, dict):
-        cleaned = {
-            k: remove_empty_and_none(v)
-            for k, v in obj.items()
-            if v is not None
-        }
-        return {k: v for k, v in cleaned.items() if v not in (None, {}, [])}
-    elif isinstance(obj, list):
-        cleaned = [remove_empty_and_none(v) for v in obj if v is not None]
-        return [v for v in cleaned if v not in (None, {}, [])]
-    else:
-        return obj
+        logging.info(
+            f"[{channel.title}] Inserted {len(all_data)} entries. Last ID: {new_last_id}"
+        )
