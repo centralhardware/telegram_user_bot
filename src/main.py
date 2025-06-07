@@ -25,7 +25,9 @@ def health():
 
 
 def run_flask():
-    app.run(host='0.0.0.0', port=80)
+    # Disable default werkzeug request logging
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+    app.run(host='0.0.0.0', port=80, use_reloader=False)
 
 
 async def run_telegram_clients():
