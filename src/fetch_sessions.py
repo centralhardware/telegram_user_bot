@@ -62,6 +62,3 @@ async def fetch_user_sessions(client):
                 "updated_at",
             ],
         )
-        logging.info(f"[{now}] Inserted {len(all_data)} session entries.")
-    else:
-        logging.info(f"[{now}] No active sessions found.")
