@@ -54,4 +54,4 @@ async def fetch_user_sessions(client):
                 "updated_at",
             ],
         )
-        logging.info(f"[{now}] Inserted {len(all_data)} session entries.")
+        logging.info(f"Inserted {len(all_data)} session entries.")
