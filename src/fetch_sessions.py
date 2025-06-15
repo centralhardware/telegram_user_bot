@@ -34,6 +34,14 @@ async def fetch_user_sessions(client):
                 now,
             ]
         )
+        logging.info(
+            "session  %12d %-25s %-10s %-15s %s",
+            session.hash,
+            (session.device_model or "")[:25],
+            (session.platform or "")[:10],
+            session.ip or "",
+            session.app_version or "",
+        )
 
     if all_data:
         clickhouse.insert(
