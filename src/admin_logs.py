@@ -107,3 +107,12 @@ async def fetch_channel_actions(client, chat_id):
             len(all_data),
             new_last_id,
         )
+        for entry in all_data:
+            logging.info(
+                "admin    %12d %-25s %-20s %-20s %s",
+                entry[0],
+                entry[8][:25],
+                entry[2],
+                entry[9][:20],
+                entry[5],
+            )
