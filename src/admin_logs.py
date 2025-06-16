@@ -34,6 +34,20 @@ def format_log_output(action_type, action, default_message):
         if not diff:
             diff = json.dumps({"prev": prev_text, "new": new_text}, ensure_ascii=False)
         return diff
+    elif action_type == "DeleteMessage":
+        msg = getattr(action, "message", None)
+        if msg is not None:
+            deleted_text = getattr(msg, "message", None)
+            if deleted_text:
+                return deleted_text
+            try:
+                return json.dumps(
+                    remove_empty_and_none(msg.to_dict()),
+                    default=str,
+                    ensure_ascii=False,
+                )
+            except Exception:
+                pass
     return default_message
 
 
