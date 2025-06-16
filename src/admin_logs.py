@@ -1,5 +1,6 @@
 import json
 import logging
+from difflib import unified_diff
 
 from telethon.tl.functions.channels import GetAdminLogRequest
 
@@ -8,6 +9,32 @@ from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none
 
 clickhouse = get_clickhouse_client()
+
+
+def format_log_output(action_type, action, default_message):
+    """Return text for admin log output.
+
+    For EditMessage actions return unified diff of message text, otherwise
+    return provided default JSON message.
+    """
+    if action_type == "EditMessage":
+        prev = getattr(action, "prev_message", None)
+        new = getattr(action, "new_message", None)
+        prev_text = getattr(prev, "message", "") if prev else ""
+        new_text = getattr(new, "message", "") if new else ""
+        diff = "\n".join(
+            unified_diff(
+                prev_text.splitlines(),
+                new_text.splitlines(),
+                fromfile="prev",
+                tofile="new",
+                lineterm="",
+            )
+        )
+        if not diff:
+            diff = json.dumps({"prev": prev_text, "new": new_text}, ensure_ascii=False)
+        return diff
+    return default_message
 
 
 def get_last_id_from_clickhouse(chat_id):
@@ -75,6 +102,15 @@ async def fetch_channel_actions(client, chat_id):
                     title_map.get(user_id, ""),
                 ]
             )
+            log_text = format_log_output(action_type, entry.action, message)
+            logging.info(
+                "admin    %12d %-25s %-20s %-20s %s",
+                eid,
+                channel.title[:25],
+                action_type,
+                title_map.get(user_id, "")[:20],
+                log_text,
+            )
 
             if eid > new_last_id:
                 new_last_id = eid
@@ -107,12 +143,3 @@ async def fetch_channel_actions(client, chat_id):
             len(all_data),
             new_last_id,
         )
-        for entry in all_data:
-            logging.info(
-                "admin    %12d %-25s %-20s %-20s %s",
-                entry[0],
-                entry[8][:25],
-                entry[2],
-                entry[9][:20],
-                entry[5],
-            )
