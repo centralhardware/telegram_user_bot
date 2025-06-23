@@ -10,6 +10,7 @@ class Config:
         self.db_password = os.getenv("CLICKHOUSE_PASSWORD")
         self.db_host = os.getenv("CLICKHOUSE_HOST")
         self.db_database = os.getenv("CLICKHOUSE_DATABASE")
+        self.chat_ids = os.getenv("TELEGRAM_CHAT_IDS").split(",")
 
 
 config = Config()

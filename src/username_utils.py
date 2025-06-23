@@ -1,10 +1,7 @@
-"""Utility helpers for working with usernames."""
-
 from typing import List
 
 
 def extract_usernames(entity) -> List[str]:
-    """Return list of usernames from a Telethon entity."""
     usernames: List[str] = []
     if hasattr(entity, "username") and entity.username:
         usernames.append(entity.username)

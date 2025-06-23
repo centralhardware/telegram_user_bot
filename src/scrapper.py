@@ -112,11 +112,9 @@ async def save_incoming(event):
         first_name = None
         last_name = None
 
-    # Prepare message content - either raw_text or JSON serialized message
     message_content = event.raw_text
     if event.raw_text == "":
         try:
-            # Serialize message object to JSON when raw_text is empty
             message_dict = remove_empty_and_none(event.message.to_dict())
             message_content = json.dumps(message_dict, default=str, ensure_ascii=False)
         except Exception as e:

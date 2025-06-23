@@ -12,13 +12,6 @@ clickhouse = get_clickhouse_client()
 
 
 def format_log_output(action_type, action, default_message):
-    """Return text for admin log output.
-
-    For EditMessage actions return unified diff of message text.
-    For ParticipantJoin/ParticipantLeave actions return an empty string,
-    since their action JSON contains no useful data. For other actions
-    return provided default JSON message.
-    """
     if action_type == "EditMessage":
         prev = getattr(action, "prev_message", None)
         new = getattr(action, "new_message", None)

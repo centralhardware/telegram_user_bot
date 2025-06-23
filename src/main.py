@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 import threading
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -8,7 +7,6 @@ from flask import Flask, jsonify
 from telethon import events
 
 from config import config
-from notify_admins import notify_admins
 from scrapper import save_outgoing, save_incoming, save_deleted
 from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
@@ -26,7 +24,6 @@ def health():
 
 
 def run_flask():
-    # Disable default werkzeug request logging
     logging.getLogger("werkzeug").setLevel(logging.WARNING)
     app.run(host="0.0.0.0", port=80, use_reloader=False)
 
@@ -37,16 +34,12 @@ async def run_telegram_clients():
     client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     client.add_event_handler(save_deleted, events.MessageDeleted())
     client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    client.add_event_handler(
-        notify_admins, events.NewMessage(outgoing=True, pattern="!n", forwards=False)
-    )
     client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 
     scheduler = AsyncIOScheduler()
 
-    chat_ids_str = os.getenv("TELEGRAM_CHAT_IDS", "")
     chat_ids = [
-        int(cid.strip()) for cid in chat_ids_str.split(",") if cid.strip().isdigit()
+        int(cid.strip()) for cid in config.chat_ids if cid.strip().isdigit()
     ]
     for chat_id in chat_ids:
         scheduler.add_job(
@@ -66,11 +59,9 @@ def main():
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
     logging.info("start application")
 
-    # Запускаем Flask в отдельном потоке
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
 
-    # Запускаем Telegram клиентов в asyncio
     asyncio.run(run_telegram_clients())
 
 
