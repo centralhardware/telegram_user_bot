@@ -1,6 +1,6 @@
 import asyncio
 
-CHAT_ID = 1633660171
+CHAT_ID = -1001633660171
 TRIGGER_TEXT = "#грбнпндельник"
 RESPONSE_TEXT = "/start@y9catbot"
 
