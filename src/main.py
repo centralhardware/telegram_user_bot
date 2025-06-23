@@ -13,6 +13,7 @@ from scrapper import save_outgoing, save_incoming, save_deleted
 from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
+from auto_catbot import handle_catbot_trigger
 
 app = Flask(__name__)
 
@@ -39,6 +40,7 @@ async def run_telegram_clients():
     client.add_event_handler(
         notify_admins, events.NewMessage(outgoing=True, pattern="!n", forwards=False)
     )
+    client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 
     scheduler = AsyncIOScheduler()
 
