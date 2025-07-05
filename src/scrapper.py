@@ -154,7 +154,7 @@ async def save_incoming(event):
             event.message.id,
             message_content,
             event.message.reply_to_msg_id,
-            event.client.session.session_user_id
+            event.client._self_id
         ]
     )
     if len(incoming_batch) >= INCOMING_BATCH_SIZE:
