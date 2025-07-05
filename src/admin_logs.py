@@ -8,8 +8,6 @@ from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none
 
-clickhouse = get_clickhouse_client()
-
 
 def format_log_output(action_type, action, default_message):
     if action_type == "EditMessage":
@@ -49,6 +47,7 @@ def format_log_output(action_type, action, default_message):
 
 
 def get_last_id_from_clickhouse(chat_id):
+    clickhouse = get_clickhouse_client()
     result = clickhouse.query(
         """
         SELECT max(event_id) AS last_id
@@ -132,6 +131,7 @@ async def fetch_channel_actions(client, chat_id):
             max_id = max(e.id for e in events.events)
 
     if all_data:
+        clickhouse = get_clickhouse_client()
         clickhouse.insert(
             "telegram_user_bot.admin_actions2",
             all_data,

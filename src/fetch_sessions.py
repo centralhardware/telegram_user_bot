@@ -5,10 +5,9 @@ from telethon.tl.functions.account import GetAuthorizationsRequest
 
 from clickhouse_utils import get_clickhouse_client
 
-clickhouse = get_clickhouse_client()
-
 
 async def fetch_user_sessions(client):
+    clickhouse = get_clickhouse_client()
     result = await client(GetAuthorizationsRequest())
     now = datetime.utcnow()
 

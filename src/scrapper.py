@@ -8,14 +8,13 @@ from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none
 
-clickhouse = get_clickhouse_client()
-
 # Batch for incoming messages
 INCOMING_BATCH_SIZE = 1000
 incoming_batch: List[List] = []
 
 
 async def save_outgoing(event):
+    clickhouse = get_clickhouse_client()
     chat_title = ""
 
     if hasattr(event.chat, "title"):
@@ -79,6 +78,7 @@ async def save_outgoing(event):
 
 
 def save_inc(data):
+    clickhouse = get_clickhouse_client()
     clickhouse.insert(
         "telegram_user_bot.chats_log",
         data,
@@ -99,6 +99,7 @@ def save_inc(data):
 
 
 def save_del(data):
+    clickhouse = get_clickhouse_client()
     clickhouse.insert(
         "telegram_user_bot.deleted_log", data, ["date_time", "chat_id", "message_id"]
     )
@@ -163,6 +164,7 @@ async def save_deleted(event):
     if event.chat_id is None:
         return
 
+    clickhouse = get_clickhouse_client()
     for msg_id in event.deleted_ids:
         save_del([[datetime.now(), event.chat_id, msg_id]])
 
