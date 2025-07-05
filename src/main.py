@@ -45,15 +45,16 @@ async def run_telegram_clients():
             config.api_hash,
         )
 
+    await main_client.get_me()
+    if second_client:
+        await  second_client.get_me();
+
     # Handlers for the primary client
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
-    # Incoming messages are handled either by the secondary client or the
-    # primary one when no secondary client is configured.
+    main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     if second_client:
         second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    else:
-        main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
 
     main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 

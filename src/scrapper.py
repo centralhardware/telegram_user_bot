@@ -57,8 +57,7 @@ async def save_outgoing(event):
             event.chat_id,
             admins,
             event.message.id,
-            event.message.reply_to_msg_id or 0,
-            event.sender_id or 0,
+            event.message.reply_to_msg_id or 0
         ]
     ]
     clickhouse.insert(
@@ -73,8 +72,7 @@ async def save_outgoing(event):
             "id",
             "admins2",
             "message_id",
-            "reply_to",
-            "user_id",
+            "reply_to"
         ],
     )
 
@@ -156,6 +154,7 @@ async def save_incoming(event):
             event.message.id,
             message_content,
             event.message.reply_to_msg_id,
+            event.client.session.session_user_id
         ]
     )
     if len(incoming_batch) >= INCOMING_BATCH_SIZE:
