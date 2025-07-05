@@ -44,7 +44,7 @@ async def run_telegram_clients():
             config.api_id,
             config.api_hash,
         )
-        second_client.start(phone=config.telephone_second)
+        await second_client.start(phone=config.telephone_second)
 
 
 
