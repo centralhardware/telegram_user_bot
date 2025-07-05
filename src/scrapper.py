@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from typing import List
 
 from admin_utils import get_admins
 from username_utils import extract_usernames
@@ -8,6 +9,10 @@ from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none
 
 clickhouse = get_clickhouse_client()
+
+# Batch for incoming messages
+INCOMING_BATCH_SIZE = 100
+incoming_batch: List[List] = []
 
 
 async def save_outgoing(event):
@@ -99,6 +104,12 @@ def save_del(data):
     )
 
 
+def flush_incoming_batch():
+    if incoming_batch:
+        save_inc(incoming_batch)
+        incoming_batch.clear()
+
+
 async def save_incoming(event):
     if event.chat_id >= 0 or event.is_private is True or event.message.sender is None:
         return
@@ -129,23 +140,23 @@ async def save_incoming(event):
         event.message.reply_to_msg_id,
     )
 
-    save_inc(
+    incoming_batch.append(
         [
-            [
-                datetime.now(),
-                event.chat.title,
-                event.chat_id,
-                usernames,
-                chat_usernames,
-                first_name,
-                last_name,
-                event.message.sender.id,
-                event.message.id,
-                message_content,
-                event.message.reply_to_msg_id,
-            ]
+            datetime.now(),
+            event.chat.title,
+            event.chat_id,
+            usernames,
+            chat_usernames,
+            first_name,
+            last_name,
+            event.message.sender.id,
+            event.message.id,
+            message_content,
+            event.message.reply_to_msg_id,
         ]
     )
+    if len(incoming_batch) >= INCOMING_BATCH_SIZE:
+        flush_incoming_batch()
 
 
 async def save_deleted(event):
