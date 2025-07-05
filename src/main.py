@@ -44,6 +44,7 @@ async def run_telegram_clients():
             config.api_id,
             config.api_hash,
         )
+        second_client.start(phone=config.telephone_second)
 
     # Handlers for the primary client
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
