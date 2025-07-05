@@ -58,6 +58,7 @@ async def save_outgoing(event):
             admins,
             event.message.id,
             event.message.reply_to_msg_id or 0,
+            event.sender_id or 0,
         ]
     ]
     clickhouse.insert(
@@ -73,6 +74,7 @@ async def save_outgoing(event):
             "admins2",
             "message_id",
             "reply_to",
+            "user_id",
         ],
     )
 
