@@ -46,37 +46,6 @@ async def run_telegram_clients():
         )
         second_client.start(phone=config.telephone_second)
 
-    # Handlers for the primary client
-    main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
-    main_client.add_event_handler(save_deleted, events.MessageDeleted())
-    main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    if second_client:
-        second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-
-    main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
-
-    scheduler = AsyncIOScheduler()
-
-    chat_ids = [int(cid.strip()) for cid in config.chat_ids if cid.strip().isdigit()]
-    for chat_id in chat_ids:
-        scheduler.add_job(
-            fetch_channel_actions, "interval", minutes=1, args=[main_client, chat_id]
-        )
-    scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[main_client])
-    scheduler.add_job(flush_incoming_batch, "interval", seconds=10)
-    scheduler.start()
-
-    await main_client.start(phone=config.telephone)
-    if second_client:
-        await second_client.start(phone=config.telephone_second)
-
-    if second_client:
-        await asyncio.gather(
-            main_client.run_until_disconnected(),
-            second_client.run_until_disconnected(),
-        )
-    else:
-        await main_client.run_until_disconnected()
 
 
 def main():
