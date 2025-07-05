@@ -11,7 +11,7 @@ from utils import remove_empty_and_none
 clickhouse = get_clickhouse_client()
 
 # Batch for incoming messages
-INCOMING_BATCH_SIZE = 100
+INCOMING_BATCH_SIZE = 1000
 incoming_batch: List[List] = []
 
 

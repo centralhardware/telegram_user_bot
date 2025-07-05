@@ -52,7 +52,7 @@ async def run_telegram_clients():
         )
 
     scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[client])
-    scheduler.add_job(flush_incoming_batch, "interval", seconds=1)
+    scheduler.add_job(flush_incoming_batch, "interval", seconds=10)
     scheduler.start()
 
     await client.start(phone=config.telephone)
