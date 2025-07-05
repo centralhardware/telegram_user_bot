@@ -35,16 +35,12 @@ def run_flask():
 
 async def run_telegram_clients():
     main_client = TelegramClient("session/alex", config.api_id, config.api_hash)
-    second_client = None
-
-    # Use the same application credentials for the optional second account.
-    if config.telephone_second:
-        second_client = TelegramClient(
-            "session/alex2",
-            config.api_id,
-            config.api_hash,
-        )
-        await second_client.start(phone=config.telephone_second)
+    second_client = TelegramClient(
+    "session/alex2",
+        config.api_id,
+        config.api_hash,
+    )
+    await second_client.start(phone=config.telephone_second)
 
 
 
