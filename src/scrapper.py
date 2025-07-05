@@ -94,6 +94,7 @@ def save_inc(data):
             "message_id",
             "message",
             "reply_to",
+            "client_id"
         ],
     )
 
