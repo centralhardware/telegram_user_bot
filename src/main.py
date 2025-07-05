@@ -35,16 +35,18 @@ def run_flask():
 
 async def run_telegram_clients():
     main_client = TelegramClient("session/alex", config.api_id, config.api_hash)
-    second_client = TelegramClient(
-    "session/alex2",
-        config.api_id,
-        config.api_hash,
-    )
-    await second_client.start(phone=config.telephone_second)
+
 
 
 
 def main():
+    second_client = TelegramClient(
+        "session/alex2",
+        config.api_id,
+        config.api_hash,
+    )
+    second_client.start()
+
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
     logging.info("start application")
