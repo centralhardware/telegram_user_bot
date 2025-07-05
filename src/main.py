@@ -7,7 +7,12 @@ from flask import Flask, jsonify
 from telethon import events
 
 from config import config
-from scrapper import save_outgoing, save_incoming, save_deleted
+from scrapper import (
+    save_outgoing,
+    save_incoming,
+    save_deleted,
+    flush_incoming_batch,
+)
 from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
@@ -47,6 +52,7 @@ async def run_telegram_clients():
         )
 
     scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[client])
+    scheduler.add_job(flush_incoming_batch, "interval", seconds=1)
     scheduler.start()
 
     await client.start(phone=config.telephone)
