@@ -5,8 +5,11 @@ from config import config
 
 
 # Store a client instance per async context to avoid concurrent queries within
-# the same session.  Each task will lazily create its own client on demand.
-_client_var: contextvars.ContextVar = contextvars.ContextVar("clickhouse_client", default=None)
+# the same session. Each task will lazily create its own client on demand.
+_client_var: contextvars.ContextVar = contextvars.ContextVar(
+    "clickhouse_client",
+    default=None,
+)
 
 
 def get_clickhouse_client():
