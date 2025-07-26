@@ -57,7 +57,8 @@ async def save_outgoing(event):
             event.chat_id,
             admins,
             event.message.id,
-            event.message.reply_to_msg_id or 0
+            event.message.reply_to_msg_id or 0,
+            event.client._self_id
         ]
     ]
     clickhouse.insert(
@@ -72,7 +73,8 @@ async def save_outgoing(event):
             "id",
             "admins2",
             "message_id",
-            "reply_to"
+            "reply_to",
+            "client_id"
         ],
     )
 
