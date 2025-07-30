@@ -68,7 +68,7 @@ async def run_telegram_clients():
     scheduler.add_job(
         reset_unread_counters,
         "interval",
-        minutes=5,
+        days=1,
         args=[second_client],
     )
     scheduler.start()
