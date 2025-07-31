@@ -53,6 +53,7 @@ async def run_telegram_clients():
     main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     second_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
+    second_client.add_event_handler(save_deleted, events.MessageDeleted())
 
     main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 

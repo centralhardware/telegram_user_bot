@@ -104,7 +104,9 @@ def save_inc(data):
 def save_del(data):
     clickhouse = get_clickhouse_client()
     clickhouse.insert(
-        "telegram_user_bot.deleted_log", data, ["date_time", "chat_id", "message_id"]
+        "telegram_user_bot.deleted_log",
+        data,
+        ["date_time", "chat_id", "message_id", "client_id"],
     )
 
 
@@ -170,7 +172,7 @@ async def save_deleted(event):
 
     clickhouse = get_clickhouse_client()
     for msg_id in event.deleted_ids:
-        save_del([[datetime.now(), event.chat_id, msg_id]])
+        save_del([[datetime.now(), event.chat_id, msg_id, event.client._self_id]])
 
         try:
             chat_title = clickhouse.query(
