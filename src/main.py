@@ -4,7 +4,7 @@ import threading
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from flask import Flask, jsonify
-from telethon import events
+from telethon import events, functions
 
 from config import config
 from scrapper import (
@@ -77,6 +77,14 @@ async def run_telegram_clients():
 
     await main_client.start(phone=config.telephone)
     await second_client.start(phone=config.telephone_second)
+
+    # Ensure sensitive content is allowed for both clients
+    await main_client(
+        functions.account.SetContentSettingsRequest(sensitive_enabled=True)
+    )
+    await second_client(
+        functions.account.SetContentSettingsRequest(sensitive_enabled=True)
+    )
     await asyncio.gather(
         main_client.run_until_disconnected(),
         second_client.run_until_disconnected(),
