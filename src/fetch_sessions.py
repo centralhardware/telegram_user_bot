@@ -31,6 +31,7 @@ async def fetch_user_sessions(client):
                 session.date_created,
                 session.date_active,
                 now,
+                client._self_id,
             ]
         )
 
@@ -51,6 +52,7 @@ async def fetch_user_sessions(client):
                 "date_created",
                 "date_active",
                 "updated_at",
+                "client_id",
             ],
         )
         logging.info(f"Inserted {len(all_data)} session entries.")
