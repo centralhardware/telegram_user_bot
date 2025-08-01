@@ -1,19 +1,26 @@
 import os
+from dataclasses import dataclass, field
+from typing import List, Optional
 
 
+def _get_chat_ids() -> List[str]:
+    chat_ids = os.getenv("TELEGRAM_CHAT_IDS", "")
+    return [cid.strip() for cid in chat_ids.split(",") if cid.strip()]
+
+
+@dataclass
 class Config:
-    def __init__(self):
-        self.api_id = int(os.getenv("API_ID"))
-        self.api_hash = os.getenv("API_HASH")
-        self.telephone = os.getenv("TELEPHONE")
-        # Optional second telephone number for an additional account that uses
-        # the same API credentials as the primary account.
-        self.telephone_second = os.getenv("TELEPHONE_SECOND")
-        self.db_user = os.getenv("CLICKHOUSE_USER")
-        self.db_password = os.getenv("CLICKHOUSE_PASSWORD")
-        self.db_host = os.getenv("CLICKHOUSE_HOST")
-        self.db_database = os.getenv("CLICKHOUSE_DATABASE")
-        self.chat_ids = os.getenv("TELEGRAM_CHAT_IDS").split(",")
+    api_id: int = int(os.getenv("API_ID", 0))
+    api_hash: str = os.getenv("API_HASH", "")
+    telephone: str = os.getenv("TELEPHONE", "")
+    # Optional second telephone number for an additional account that uses
+    # the same API credentials as the primary account.
+    telephone_second: Optional[str] = os.getenv("TELEPHONE_SECOND")
+    db_user: str = os.getenv("CLICKHOUSE_USER", "")
+    db_password: str = os.getenv("CLICKHOUSE_PASSWORD", "")
+    db_host: str = os.getenv("CLICKHOUSE_HOST", "")
+    db_database: str = os.getenv("CLICKHOUSE_DATABASE", "")
+    chat_ids: List[str] = field(default_factory=_get_chat_ids)
 
 
 config = Config()

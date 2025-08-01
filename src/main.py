@@ -18,6 +18,12 @@ from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
 from auto_catbot import handle_catbot_trigger
 
+
+def create_client(session_name: str) -> TelegramClient:
+    """Create a Telegram client using the global config."""
+    return TelegramClient(session_name, config.api_id, config.api_hash)
+
+
 app = Flask(__name__)
 
 
@@ -40,12 +46,8 @@ async def reset_unread_counters(client):
 
 
 async def run_telegram_clients():
-    main_client = TelegramClient("session/alex", config.api_id, config.api_hash)
-    second_client = TelegramClient(
-        "session/alex2",
-        config.api_id,
-        config.api_hash,
-    )
+    main_client = create_client("session/alex")
+    second_client = create_client("session/alex2")
 
     # Handlers for the primary client
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
