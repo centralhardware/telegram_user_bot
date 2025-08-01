@@ -113,8 +113,8 @@ def save_del(data):
 def flush_incoming_batch():
     if incoming_batch:
         save_inc(incoming_batch)
-        incoming_batch.clear()
         logging.info(f"Saved {len(incoming_batch)} incoming messages")
+        incoming_batch.clear()
 
 
 async def save_incoming(event):
