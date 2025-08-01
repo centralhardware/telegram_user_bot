@@ -39,11 +39,6 @@ def run_flask():
     app.run(host="0.0.0.0", port=80, use_reloader=False)
 
 
-async def reset_unread_counters(client):
-    async for dialog in client.iter_dialogs():
-        if dialog.unread_count:
-            await client.send_read_acknowledge(dialog.entity)
-
 
 async def run_telegram_clients():
     main_client = create_client("session/alex")
@@ -69,12 +64,6 @@ async def run_telegram_clients():
     scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[main_client])
     scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[second_client])
     scheduler.add_job(flush_incoming_batch, "interval", seconds=10)
-    scheduler.add_job(
-        reset_unread_counters,
-        "interval",
-        days=1,
-        args=[second_client],
-    )
     scheduler.start()
 
     await main_client.start(phone=config.telephone)
