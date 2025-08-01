@@ -55,4 +55,3 @@ async def fetch_user_sessions(client):
                 "client_id",
             ],
         )
-        logging.info(f"Inserted {len(all_data)} session entries.")
