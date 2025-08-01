@@ -114,6 +114,7 @@ def flush_incoming_batch():
     if incoming_batch:
         save_inc(incoming_batch)
         incoming_batch.clear()
+        logging.info(f"Saved {len(incoming_batch)} incoming messages")
 
 
 async def save_incoming(event):
