@@ -2,19 +2,17 @@ import json
 import logging
 from dataclasses import dataclass
 from difflib import unified_diff
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, List
 
 from telethon.tl.functions.channels import GetAdminLogRequest
 
-from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
+from username_utils import extract_usernames
 from utils import remove_empty_and_none
 
 
 @dataclass
 class AdminLogRecord:
-    """Container for a single admin log event."""
-
     event_id: int
     chat_id: int
     action_type: str
@@ -27,8 +25,7 @@ class AdminLogRecord:
     user_title: str
 
 
-def format_log_output(action_type: str, action: Any, default_message: str) -> str:
-    """Return a human friendly log message for an admin action."""
+def format_log_output(action_type, action, default_message):
     if action_type == "EditMessage":
         prev = getattr(action, "prev_message", None)
         new = getattr(action, "new_message", None)
@@ -43,8 +40,6 @@ def format_log_output(action_type: str, action: Any, default_message: str) -> st
                 lineterm="",
             )
         )
-        if not diff:
-            diff = json.dumps({"prev": prev_text, "new": new_text}, ensure_ascii=False)
         return diff
     elif action_type == "DeleteMessage":
         msg = getattr(action, "message", None)
@@ -65,8 +60,7 @@ def format_log_output(action_type: str, action: Any, default_message: str) -> st
     return default_message
 
 
-def get_last_id_from_clickhouse(chat_id: int) -> int:
-    """Return the last processed event_id for the given chat."""
+def get_last_id_from_clickhouse(chat_id):
     clickhouse = get_clickhouse_client()
     result = clickhouse.query(
         """
@@ -79,10 +73,9 @@ def get_last_id_from_clickhouse(chat_id: int) -> int:
     return result[0][0] if result and result[0][0] is not None else 0
 
 
-def build_event_maps(events: Any) -> Tuple[Dict[int, List[str]], Dict[int, str], Dict[int, List[str]]]:
-    """Build helper maps for usernames and titles from admin log events."""
-    usernames_map: Dict[int, List[str]] = {}
-    title_map: Dict[int, str] = {}
+def build_event_maps(events):
+    usernames_map = {}
+    title_map = {}
 
     for user in events.users:
         title_map[user.id] = f"{user.first_name or ''} {user.last_name or ''}".strip()
@@ -92,14 +85,13 @@ def build_event_maps(events: Any) -> Tuple[Dict[int, List[str]], Dict[int, str],
     return usernames_map, title_map, chat_map
 
 
-async def fetch_channel_actions(client, chat_id: int) -> None:
-    """Fetch and store channel admin log events since the last processed ID."""
+async def fetch_channel_actions(client, chat_id):
     last_id = get_last_id_from_clickhouse(chat_id)
     channel = await client.get_entity(chat_id)
     chat_usernames = extract_usernames(channel)
     max_id = last_id
     new_last_id = last_id
-    all_data: List[List[Any]] = []
+    all_data = []
 
     while True:
         events = await client(
@@ -156,7 +148,7 @@ async def fetch_channel_actions(client, chat_id: int) -> None:
             logging.info(
                 "admin    %12d %-25s %-20s %-20s %s",
                 record.event_id,
-                channel.title[:25],
+                record.chat_title[:25],
                 record.action_type,
                 record.user_title[:20],
                 log_text,
