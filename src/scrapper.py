@@ -1,3 +1,4 @@
+import atexit
 import json
 import logging
 from datetime import datetime
@@ -208,3 +209,6 @@ async def save_deleted(event):
             str(chat_title)[:20],
             message,
         )
+
+
+atexit.register(flush_incoming_batch)
