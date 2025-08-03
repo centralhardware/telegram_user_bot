@@ -124,11 +124,11 @@ async def save_incoming(event):
     usernames = extract_usernames(event.message.sender)
     chat_usernames = extract_usernames(event.chat)
     try:
-        first_name = event.message.sender.first_name
-        last_name = event.message.sender.last_name
+        first_name = event.message.sender.first_name or ""
+        last_name = event.message.sender.last_name or ""
     except Exception:
-        first_name = None
-        last_name = None
+        first_name = ""
+        last_name = ""
 
     message_content = event.raw_text
     if event.raw_text == "":
@@ -159,7 +159,7 @@ async def save_incoming(event):
             event.message.sender.id,
             event.message.id,
             message_content,
-            event.message.reply_to_msg_id,
+            event.message.reply_to_msg_id or 0,
             event.client._self_id
         ]
     )
