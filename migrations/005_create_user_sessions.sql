@@ -1,3 +1,5 @@
+SET allow_suspicious_low_cardinality_types = 1;
+
 CREATE TABLE IF NOT EXISTS  user_sessions (
     hash           Int64,
     device_model   LowCardinality(String),

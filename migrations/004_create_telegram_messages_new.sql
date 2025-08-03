@@ -1,3 +1,5 @@
+SET allow_suspicious_low_cardinality_types = 1;
+
 CREATE TABLE IF NOT EXISTS  telegram_messages_new (
     date_time  DateTime,
     message    String,

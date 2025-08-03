@@ -1,3 +1,5 @@
+SET allow_suspicious_low_cardinality_types = 1;
+
 CREATE TABLE IF NOT EXISTS  deleted_log (
     date_time  DateTime,
     chat_id    Int64,
