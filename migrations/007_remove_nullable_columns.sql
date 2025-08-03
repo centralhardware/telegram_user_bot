@@ -1,14 +1,19 @@
 SET allow_suspicious_low_cardinality_types = 1;
 
 ALTER TABLE telegram_user_bot.chats_log
+UPDATE first_name = '' WHERE first_name IS NULL;
+
+ALTER TABLE telegram_user_bot.chats_log
+UPDATE second_name = '' WHERE second_name IS NULL;
+
+ALTER TABLE telegram_user_bot.chats_log
+UPDATE reply_to = 0 WHERE reply_to IS NULL;
+
+ALTER TABLE telegram_user_bot.chats_log
     MODIFY COLUMN first_name String,
     MODIFY COLUMN second_name String,
     MODIFY COLUMN reply_to UInt64;
 
-ALTER TABLE telegram_user_bot.user_sessions
-    MODIFY COLUMN system_version LowCardinality(String),
-    MODIFY COLUMN app_version LowCardinality(String),
-    MODIFY COLUMN ip LowCardinality(String);
 
 DROP VIEW IF EXISTS telegram_user_bot.mv_chat_stat;
 DROP VIEW IF EXISTS telegram_user_bot.mv_user_stat;
