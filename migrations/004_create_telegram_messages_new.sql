@@ -1,5 +1,4 @@
--- auto-generated definition
-CREATE TABLE telegram_messages_new (
+CREATE TABLE IF NOT EXISTS  telegram_messages_new (
     date_time  DateTime,
     message    String,
     title      LowCardinality(String),
@@ -7,9 +6,8 @@ CREATE TABLE telegram_messages_new (
     admins2    Array(LowCardinality(String)),
     usernames  Array(LowCardinality(String)),
     message_id UInt64,
-    reply_to   UInt64 DEFAULT 0,
+    reply_to   UInt64,
     raw        String,
     client_id  LowCardinality(UInt64)
 ) ENGINE = MergeTree
-ORDER BY date_time
-SETTINGS index_granularity = 8192;
+ORDER BY date_time;

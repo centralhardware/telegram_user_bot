@@ -1,5 +1,4 @@
--- auto-generated definition
-CREATE TABLE chats_log (
+CREATE TABLE IF NOT EXISTS  chats_log (
     date_time      DateTime,
     chat_title     LowCardinality(String),
     chat_id        Int64,
@@ -13,5 +12,4 @@ CREATE TABLE chats_log (
     reply_to       Nullable(UInt64),
     client_id      LowCardinality(UInt64)
 ) ENGINE = ReplacingMergeTree(date_time)
-ORDER BY (chat_id, message_id)
-SETTINGS index_granularity = 8192;
+ORDER BY (chat_id, message_id);

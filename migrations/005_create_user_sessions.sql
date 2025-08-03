@@ -1,5 +1,4 @@
--- auto-generated definition
-CREATE TABLE user_sessions (
+CREATE TABLE IF NOT EXISTS  user_sessions (
     hash           Int64,
     device_model   LowCardinality(String),
     platform       LowCardinality(String),
@@ -14,5 +13,4 @@ CREATE TABLE user_sessions (
     updated_at     DateTime,
     client_id      LowCardinality(UInt64)
 ) ENGINE = ReplacingMergeTree(updated_at)
-ORDER BY hash
-SETTINGS index_granularity = 8192;
+ORDER BY hash;
