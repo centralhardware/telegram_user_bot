@@ -1,6 +1,6 @@
 SET allow_suspicious_low_cardinality_types = 1;
 
-CREATE MATERIALIZED VIEW telegram_user_bot.mv_chat_stat
+CREATE MATERIALIZED VIEW IF NOT EXISTS telegram_user_bot.mv_chat_stat
 (
     `client_id` LowCardinality(UInt64),
     `chat_id` Int64,
@@ -26,7 +26,7 @@ GROUP BY
     client_id,
     chat_id;
 
-CREATE MATERIALIZED VIEW telegram_user_bot.mv_message_stats
+CREATE MATERIALIZED VIEW IF NOT EXISTS telegram_user_bot.mv_message_stats
 (
     `id` Int64,
     `client_id` LowCardinality(UInt64),
@@ -44,7 +44,7 @@ AS SELECT
 FROM telegram_user_bot.telegram_messages_new
 GROUP BY (id, client_id);
 
-CREATE MATERIALIZED VIEW telegram_user_bot.mv_user_stat
+CREATE MATERIALIZED VIEW IF NOT EXISTS telegram_user_bot.mv_user_stat
 (
     `client_id` LowCardinality(UInt64),
     `user_id` UInt64,
