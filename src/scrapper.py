@@ -4,7 +4,6 @@ import logging
 from datetime import datetime
 from typing import List
 
-from admin_utils import get_admins
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none
@@ -38,7 +37,6 @@ async def save_outgoing(event):
     if chat_title == "":
         chat_title = chat_id[0]
 
-    admins = await get_admins(event.chat, event.client)
     message_dict = remove_empty_and_none(event.message.to_dict())
     message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
     logging.info(
@@ -56,7 +54,7 @@ async def save_outgoing(event):
             chat_title,
             chat_id,
             event.chat_id,
-            admins,
+            [],
             event.message.id,
             event.message.reply_to_msg_id or 0,
             event.client._self_id

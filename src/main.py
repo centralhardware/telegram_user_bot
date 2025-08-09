@@ -84,10 +84,7 @@ async def run_telegram_clients():
         scheduler.add_job(
             fetch_user_sessions, "interval", minutes=1, args=[main_client]
         )
-    if second_client in started_clients:
-        scheduler.add_job(
-            fetch_user_sessions, "interval", minutes=1, args=[second_client]
-        )
+
     scheduler.add_job(flush_incoming_batch, "interval", seconds=10)
     scheduler.start()
 
