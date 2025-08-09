@@ -42,7 +42,6 @@ def run_flask():
 async def run_telegram_clients():
     main_client = create_client("session/alex")
     second_client = create_client("session/alex2")
-    third_client = create_client("session/alex3")
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
@@ -50,9 +49,6 @@ async def run_telegram_clients():
     second_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     second_client.add_event_handler(save_deleted, events.MessageDeleted())
-    third_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
-    third_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    third_client.add_event_handler(save_deleted, events.MessageDeleted())
 
     main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 
@@ -69,12 +65,6 @@ async def run_telegram_clients():
         started_clients.append(second_client)
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
-
-    try:
-        await third_client.start(phone=config.telephone_third)
-        started_clients.append(third_client)
-    except Exception as exc:
-        logging.error("Failed to start third client: %s", exc)
 
     if not started_clients:
         logging.error("No telegram clients could be started.")
@@ -97,10 +87,6 @@ async def run_telegram_clients():
     if second_client in started_clients:
         scheduler.add_job(
             fetch_user_sessions, "interval", minutes=1, args=[second_client]
-        )
-    if third_client in started_clients:
-        scheduler.add_job(
-            fetch_user_sessions, "interval", minutes=1, args=[third_client]
         )
     scheduler.add_job(flush_incoming_batch, "interval", seconds=10)
     scheduler.start()
