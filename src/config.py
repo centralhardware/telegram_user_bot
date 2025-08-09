@@ -14,7 +14,6 @@ class Config:
     api_hash = os.getenv("API_HASH")
     telephone = os.getenv("TELEPHONE")
     telephone_second = os.getenv("TELEPHONE_SECOND")
-    telephone_third = os.getenv("TELEPHONE_THIRD")
     db_user = os.getenv("CLICKHOUSE_USER")
     db_password = os.getenv("CLICKHOUSE_PASSWORD")
     db_host = os.getenv("CLICKHOUSE_HOST")
