@@ -39,12 +39,10 @@ def run_flask():
     app.run(host="0.0.0.0", port=80, use_reloader=False)
 
 
-
 async def run_telegram_clients():
     main_client = create_client("session/alex")
     second_client = create_client("session/alex2")
 
-    # Handlers for the primary client
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
     main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
@@ -54,32 +52,51 @@ async def run_telegram_clients():
 
     main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 
+    started_clients = []
+
+    try:
+        await main_client.start(phone=config.telephone)
+        started_clients.append(main_client)
+    except Exception as exc:
+        logging.error("Failed to start main client: %s", exc)
+
+    try:
+        await second_client.start(phone=config.telephone_second)
+        started_clients.append(second_client)
+    except Exception as exc:
+        logging.error("Failed to start second client: %s", exc)
+
+    if not started_clients:
+        logging.error("No telegram clients could be started.")
+        return
+
     scheduler = AsyncIOScheduler()
 
     chat_ids = [int(cid.strip()) for cid in config.chat_ids if cid.strip().isdigit()]
-    for chat_id in chat_ids:
+    if main_client in started_clients:
+        for chat_id in chat_ids:
+            scheduler.add_job(
+                fetch_channel_actions,
+                "interval",
+                minutes=1,
+                args=[main_client, chat_id],
+            )
         scheduler.add_job(
-            fetch_channel_actions, "interval", minutes=1, args=[main_client, chat_id]
+            fetch_user_sessions, "interval", minutes=1, args=[main_client]
         )
-    scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[main_client])
-    scheduler.add_job(fetch_user_sessions, "interval", minutes=1, args=[second_client])
+    if second_client in started_clients:
+        scheduler.add_job(
+            fetch_user_sessions, "interval", minutes=1, args=[second_client]
+        )
     scheduler.add_job(flush_incoming_batch, "interval", seconds=10)
     scheduler.start()
 
-    await main_client.start(phone=config.telephone)
-    await second_client.start(phone=config.telephone_second)
+    for client in started_clients:
+        await client(
+            functions.account.SetContentSettingsRequest(sensitive_enabled=True)
+        )
 
-    # Ensure sensitive content is allowed for both clients
-    await main_client(
-        functions.account.SetContentSettingsRequest(sensitive_enabled=True)
-    )
-    await second_client(
-        functions.account.SetContentSettingsRequest(sensitive_enabled=True)
-    )
-    await asyncio.gather(
-        main_client.run_until_disconnected(),
-        second_client.run_until_disconnected(),
-    )
+    await asyncio.gather(*(c.run_until_disconnected() for c in started_clients))
 
 
 def main():
