@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from difflib import unified_diff
+from difflib import ndiff
 from typing import Any, List
 
 from telethon.tl.functions.channels import GetAdminLogRequest
@@ -33,12 +33,9 @@ def format_log_output(action_type, action, default_message):
         prev_text = getattr(prev, "message", "") if prev else ""
         new_text = getattr(new, "message", "") if new else ""
         diff = "\n".join(
-            unified_diff(
+            ndiff(
                 prev_text.splitlines(),
                 new_text.splitlines(),
-                fromfile="prev",
-                tofile="new",
-                lineterm="",
             )
         )
         return diff
