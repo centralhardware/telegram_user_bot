@@ -21,7 +21,13 @@ from auto_catbot import handle_catbot_trigger
 
 def create_client(session_name: str) -> TelegramClient:
     """Create a Telegram client using the global config."""
-    return TelegramClient(session_name, config.api_id, config.api_hash)
+    return TelegramClient(
+        session_name,
+        config.api_id,
+        config.api_hash,
+        device_model="Telegram Android",
+        app_version="10.5.1",
+    )
 
 
 app = Flask(__name__)
