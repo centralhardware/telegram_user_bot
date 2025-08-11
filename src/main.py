@@ -93,7 +93,19 @@ async def run_telegram_clients():
             functions.account.SetContentSettingsRequest(sensitive_enabled=True)
         )
 
-    await asyncio.gather(*(c.run_until_disconnected() for c in started_clients))
+    async def run_client(client, label: str):
+        try:
+            await client.run_until_disconnected()
+        except Exception as exc:
+            logging.exception("%s client stopped due to error: %s", label, exc)
+
+    client_labels = {main_client: "main", second_client: "second"}
+    tasks = [
+        asyncio.create_task(run_client(client, client_labels.get(client, "unknown")))
+        for client in started_clients
+    ]
+
+    await asyncio.gather(*tasks)
 
 
 def main():
