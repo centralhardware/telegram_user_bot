@@ -19,6 +19,7 @@ class AdminLogRecord:
     user_id: int
     date: Any
     message: str
+    log_output: str
     usernames: List[str]
     chat_usernames: List[str]
     chat_title: str
@@ -117,6 +118,8 @@ async def fetch_channel_actions(client, chat_id):
                 ensure_ascii=False,
             )
 
+            log_text = format_log_output(action_type, entry.action, message)
+
             record = AdminLogRecord(
                 event_id=eid,
                 chat_id=chat_id,
@@ -124,6 +127,7 @@ async def fetch_channel_actions(client, chat_id):
                 user_id=user_id or 0,
                 date=entry.date,
                 message=message,
+                log_output=log_text if log_text != message else "",
                 usernames=usernames_map.get(user_id) or chat_map.get(user_id, []),
                 chat_usernames=chat_usernames,
                 chat_title=channel.title,
@@ -137,6 +141,7 @@ async def fetch_channel_actions(client, chat_id):
                     record.user_id,
                     record.date,
                     record.message,
+                    record.log_output,
                     record.usernames,
                     record.chat_usernames,
                     record.chat_title,
@@ -144,7 +149,6 @@ async def fetch_channel_actions(client, chat_id):
                 ]
             )
 
-            log_text = format_log_output(record.action_type, entry.action, record.message)
             logging.info(
                 "admin    %12d %-25s %-20s %-20s %s",
                 record.event_id,
@@ -174,6 +178,7 @@ async def fetch_channel_actions(client, chat_id):
                 "user_id",
                 "date",
                 "message",
+                "log_output",
                 "usernames",
                 "chat_usernames",
                 "chat_title",
