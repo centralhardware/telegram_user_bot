@@ -147,7 +147,7 @@ async def fetch_channel_actions(client, chat_id):
             )
 
             logging.info(
-                "admin    %12d %-25s %-20s %-20s %s",
+                "admin    %12d %-25s %-20s %-20s \n%s",
                 record.event_id,
                 record.chat_title[:25],
                 record.action_type,
