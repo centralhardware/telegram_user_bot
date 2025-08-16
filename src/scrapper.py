@@ -7,7 +7,7 @@ from typing import List
 from admin_utils import get_admins
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
-from utils import remove_empty_and_none
+from utils import remove_empty_and_none, colorize
 
 # Batch for incoming messages
 INCOMING_BATCH_SIZE = 1000
@@ -42,7 +42,7 @@ async def save_outgoing(event):
     message_dict = remove_empty_and_none(event.message.to_dict())
     message_json = json.dumps(message_dict, default=str, ensure_ascii=False)
     logging.info(
-        "outgoing %12d %-25s %s reply to %s",
+        colorize("outgoing", "outgoing %12d %-25s %s reply to %s"),
         event.message.id,
         chat_title[:20],
         event.raw_text,
@@ -141,7 +141,7 @@ async def save_incoming(event):
             message_content = "[Error serializing message]"
 
     logging.info(
-        "incoming %12d %-25s %s reply to %s",
+        colorize("incoming", "incoming %12d %-25s %s reply to %s"),
         event.message.id,
         event.chat.title[:20],
         message_content,
@@ -204,7 +204,7 @@ async def save_deleted(event):
             message = msg_id
 
         logging.info(
-            "deleted  %12d %-25s %s",
+            colorize("deleted", "deleted  %12d %-25s %s"),
             msg_id,
             str(chat_title)[:20],
             message,
