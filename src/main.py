@@ -94,7 +94,7 @@ async def run_telegram_clients():
             fetch_user_sessions, "interval", minutes=1, args=[main_client]
         )
 
-    scheduler.add_job(flush_batches(), "interval", seconds=10)
+    scheduler.add_job(flush_batches, "interval", seconds=10)
     scheduler.start()
 
     for client in started_clients:

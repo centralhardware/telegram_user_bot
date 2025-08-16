@@ -32,7 +32,7 @@ def format_log_output(action_type, action, default_message):
         new = getattr(action, "new_message", None)
         prev_text = getattr(prev, "message", "") if prev else ""
         new_text = getattr(new, "message", "") if new else ""
-        diff = "\n".join(
+        diff = "\n\n".join(
             ndiff(
                 prev_text.splitlines(),
                 new_text.splitlines(),
