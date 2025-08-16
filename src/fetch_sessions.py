@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 from telethon.tl.functions.account import GetAuthorizationsRequest

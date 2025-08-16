@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 
 
 def _get_chat_ids() -> List[str]:

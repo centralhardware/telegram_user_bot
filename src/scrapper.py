@@ -14,6 +14,10 @@ from utils import remove_empty_and_none, colorize
 INCOMING_BATCH_SIZE = 1000
 incoming_batch: List[List] = []
 
+# Batch for edited messages
+EDITED_BATCH_SIZE = 100
+edited_batch: List[List] = []
+
 
 async def save_outgoing(event):
     clickhouse = get_clickhouse_client()
@@ -119,6 +123,26 @@ def flush_incoming_batch():
         incoming_batch.clear()
 
 
+def flush_edited_batch():
+    if edited_batch:
+        clickhouse = get_clickhouse_client()
+        clickhouse.insert(
+            "telegram_user_bot.edited_log",
+            edited_batch,
+            [
+                "date_time",
+                "chat_id",
+                "message_id",
+                "message",
+                "diff",
+                "user_id",
+                "client_id",
+            ],
+        )
+        logging.info(f"Saved {len(edited_batch)} edited messages")
+        edited_batch.clear()
+
+
 async def save_incoming(event):
     if event.chat_id >= 0 or event.is_private is True or event.message.sender is None:
         return
@@ -199,29 +223,20 @@ async def save_edited(event):
 
     user_id = event.message.sender_id or 0
 
-    clickhouse.insert(
-        "telegram_user_bot.edited_log",
+    edited_batch.append(
         [
-            [
-                datetime.now(),
-                event.chat_id,
-                event.message.id,
-                message_content,
-                diff,
-                user_id,
-                event.client._self_id,
-            ]
-        ],
-        [
-            "date_time",
-            "chat_id",
-            "message_id",
-            "message",
-            "diff",
-            "user_id",
-            "client_id",
-        ],
+            datetime.now(),
+            event.chat_id,
+            event.message.id,
+            message_content,
+            diff,
+            user_id,
+            event.client._self_id,
+        ]
     )
+
+    if len(edited_batch) >= EDITED_BATCH_SIZE:
+        flush_edited_batch()
 
     logging.info(
         colorize("edited", "edited   %12d %-25s %s"),
@@ -275,3 +290,4 @@ async def save_deleted(event):
 
 
 atexit.register(flush_incoming_batch)
+atexit.register(flush_edited_batch)
