@@ -8,7 +8,7 @@ from typing import List
 from admin_utils import get_admins
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
-from utils import remove_empty_and_none, colorize, colorize_diff
+from utils import remove_empty_and_none, colorize
 
 # Batch for incoming messages
 INCOMING_BATCH_SIZE = 1000
