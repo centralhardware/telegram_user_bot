@@ -226,7 +226,7 @@ async def save_edited(event):
     )
 
     logging.info(
-        colorize("edited", "edited   \n%12d %-25s %s"),
+        colorize("edited", "edited   %12d %-25s \n%s"),
         event.message.id,
         getattr(event.chat, "title", "")[:20],
         diff,
