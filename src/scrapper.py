@@ -175,12 +175,7 @@ async def save_edited(event):
 
     message_content = event.raw_text
     if not message_content:
-        try:
-            message_dict = remove_empty_and_none(event.message.to_dict())
-            message_content = json.dumps(message_dict, default=str, ensure_ascii=False)
-        except Exception as e:
-            logging.error(f"Error serializing edited message: {e}")
-            message_content = "[Error serializing message]"
+        return
 
     clickhouse = get_clickhouse_client()
 
