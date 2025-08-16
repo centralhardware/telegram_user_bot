@@ -197,6 +197,8 @@ async def save_edited(event):
         difflib.ndiff(original.splitlines(), message_content.splitlines())
     )
 
+    user_id = event.message.sender_id or 0
+
     clickhouse.insert(
         "telegram_user_bot.edited_log",
         [
@@ -206,10 +208,19 @@ async def save_edited(event):
                 event.message.id,
                 message_content,
                 diff,
+                user_id,
                 event.client._self_id,
             ]
         ],
-        ["date_time", "chat_id", "message_id", "message", "diff", "client_id"],
+        [
+            "date_time",
+            "chat_id",
+            "message_id",
+            "message",
+            "diff",
+            "user_id",
+            "client_id",
+        ],
     )
 
     logging.info(
