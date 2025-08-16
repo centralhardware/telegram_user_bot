@@ -168,6 +168,34 @@ async def save_incoming(event):
         flush_incoming_batch()
 
 
+async def save_edited(event):
+    if event.chat_id is None:
+        return
+
+    message_content = event.raw_text
+    if message_content == "":
+        try:
+            message_dict = remove_empty_and_none(event.message.to_dict())
+            message_content = json.dumps(message_dict, default=str, ensure_ascii=False)
+        except Exception as e:
+            logging.error(f"Error serializing edited message: {e}")
+            message_content = "[Error serializing message]"
+
+    clickhouse = get_clickhouse_client()
+    clickhouse.insert(
+        "telegram_user_bot.edited_log",
+        [[datetime.now(), event.chat_id, event.message.id, message_content, event.client._self_id]],
+        ["date_time", "chat_id", "message_id", "message", "client_id"],
+    )
+
+    logging.info(
+        colorize("edited", "edited   %12d %-25s %s"),
+        event.message.id,
+        getattr(event.chat, "title", "")[:20],
+        message_content,
+    )
+
+
 async def save_deleted(event):
     if event.chat_id is None:
         return
