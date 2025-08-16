@@ -1,6 +1,7 @@
 import atexit
 import json
 import logging
+import difflib
 from datetime import datetime
 from typing import List
 
@@ -182,10 +183,41 @@ async def save_edited(event):
             message_content = "[Error serializing message]"
 
     clickhouse = get_clickhouse_client()
+
+    try:
+        original = clickhouse.query(
+            """
+        SELECT message
+        FROM telegram_user_bot.chats_log
+        WHERE chat_id = {chat_id:Int64} AND message_id = {message_id:Int64}
+        ORDER BY date_time DESC
+        LIMIT 1
+        """,
+            {"chat_id": event.chat_id, "message_id": event.message.id},
+        ).result_rows[0][0]
+    except Exception:
+        try:
+            original = clickhouse.query(
+                """
+            SELECT message
+            FROM telegram_user_bot.telegram_messages_new
+            WHERE id = {chat_id:Int64} AND message_id = {message_id:Int64}
+            ORDER BY date_time DESC
+            LIMIT 1
+            """,
+                {"chat_id": event.chat_id, "message_id": event.message.id},
+            ).result_rows[0][0]
+        except Exception:
+            original = ""
+
+    diff = "\n".join(
+        difflib.ndiff(original.splitlines(), message_content.splitlines())
+    )
+
     clickhouse.insert(
         "telegram_user_bot.edited_log",
-        [[datetime.now(), event.chat_id, event.message.id, message_content, event.client._self_id]],
-        ["date_time", "chat_id", "message_id", "message", "client_id"],
+        [[datetime.now(), event.chat_id, event.message.id, message_content, diff, event.client._self_id]],
+        ["date_time", "chat_id", "message_id", "message", "diff", "client_id"],
     )
 
     logging.info(
