@@ -133,7 +133,7 @@ async def save_incoming(event):
         last_name = ""
 
     message_content = event.raw_text
-    if event.raw_text == "":
+    if not message_content:
         try:
             message_dict = remove_empty_and_none(event.message.to_dict())
             message_content = json.dumps(message_dict, default=str, ensure_ascii=False)
@@ -174,7 +174,7 @@ async def save_edited(event):
         return
 
     message_content = event.raw_text
-    if message_content == "":
+    if not message_content:
         try:
             message_dict = remove_empty_and_none(event.message.to_dict())
             message_content = json.dumps(message_dict, default=str, ensure_ascii=False)
