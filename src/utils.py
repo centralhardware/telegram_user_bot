@@ -25,16 +25,4 @@ def colorize(message_type: str, text: str) -> str:
     return f"{color}{text}{reset}"
 
 
-def colorize_diff(diff: str) -> str:
-    colored_lines = []
-    for line in diff.splitlines():
-        if line.startswith("+"):
-            colored_lines.append(f"\033[92m{line}\033[0m")
-        elif line.startswith("-"):
-            colored_lines.append(f"\033[91m{line}\033[0m")
-        else:
-            colored_lines.append(line)
-    return "\n".join(colored_lines)
-
-
-__all__ = ["remove_empty_and_none", "colorize", "colorize_diff"]
+__all__ = ["remove_empty_and_none", "colorize"]

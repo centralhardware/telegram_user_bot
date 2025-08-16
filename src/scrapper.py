@@ -199,10 +199,8 @@ async def save_edited(event):
         original = ""
 
     diff = "\n".join(
-        difflib.ndiff(original.splitlines(), message_content.splitlines())
+        difflib.ndiff(original, message_content)
     )
-
-    colored_diff = colorize_diff(diff)
 
     clickhouse.insert(
         "telegram_user_bot.edited_log",
@@ -223,7 +221,7 @@ async def save_edited(event):
         colorize("edited", "edited   %12d %-25s %s"),
         event.message.id,
         getattr(event.chat, "title", "")[:20],
-        colored_diff,
+        diff,
     )
 
 
