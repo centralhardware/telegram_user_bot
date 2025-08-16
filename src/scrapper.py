@@ -196,19 +196,7 @@ async def save_edited(event):
             {"chat_id": event.chat_id, "message_id": event.message.id},
         ).result_rows[0][0]
     except Exception:
-        try:
-            original = clickhouse.query(
-                """
-            SELECT message
-            FROM telegram_user_bot.telegram_messages_new
-            WHERE id = {chat_id:Int64} AND message_id = {message_id:Int64}
-            ORDER BY date_time DESC
-            LIMIT 1
-            """,
-                {"chat_id": event.chat_id, "message_id": event.message.id},
-            ).result_rows[0][0]
-        except Exception:
-            original = ""
+        original = ""
 
     diff = "\n".join(
         difflib.ndiff(original.splitlines(), message_content.splitlines())
