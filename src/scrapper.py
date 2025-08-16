@@ -10,12 +10,7 @@ from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
 from utils import remove_empty_and_none, colorize
 
-# Batch for incoming messages
-INCOMING_BATCH_SIZE = 1000
 incoming_batch: List[List] = []
-
-# Batch for edited messages
-EDITED_BATCH_SIZE = 100
 edited_batch: List[List] = []
 
 
@@ -116,14 +111,11 @@ def save_del(data):
     )
 
 
-def flush_incoming_batch():
+def flush_batches():
     if incoming_batch:
         save_inc(incoming_batch)
         logging.info(f"Saved {len(incoming_batch)} incoming messages")
         incoming_batch.clear()
-
-
-def flush_edited_batch():
     if edited_batch:
         clickhouse = get_clickhouse_client()
         clickhouse.insert(
@@ -189,8 +181,6 @@ async def save_incoming(event):
             event.client._self_id
         ]
     )
-    if len(incoming_batch) >= INCOMING_BATCH_SIZE:
-        flush_incoming_batch()
 
 
 async def save_edited(event):
@@ -234,9 +224,6 @@ async def save_edited(event):
             event.client._self_id,
         ]
     )
-
-    if len(edited_batch) >= EDITED_BATCH_SIZE:
-        flush_edited_batch()
 
     logging.info(
         colorize("edited", "edited   %12d %-25s %s"),
@@ -289,5 +276,4 @@ async def save_deleted(event):
         )
 
 
-atexit.register(flush_incoming_batch)
-atexit.register(flush_edited_batch)
+atexit.register(flush_batches())
