@@ -276,4 +276,4 @@ async def save_deleted(event):
         )
 
 
-atexit.register(flush_batches())
+atexit.register(flush_batches)
