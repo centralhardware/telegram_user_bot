@@ -207,7 +207,7 @@ async def save_edited(event):
     except Exception:
         original = ""
 
-    diff = "\n\n".join(
+    diff = "\n".join(
         difflib.ndiff(original.splitlines(), message_content.splitlines())
     )
 
@@ -226,7 +226,7 @@ async def save_edited(event):
     )
 
     logging.info(
-        colorize("edited", "edited   %12d %-25s %s"),
+        colorize("edited", "edited   \n%12d %-25s %s"),
         event.message.id,
         getattr(event.chat, "title", "")[:20],
         diff,
