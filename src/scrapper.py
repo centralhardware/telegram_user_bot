@@ -199,7 +199,7 @@ async def save_edited(event):
         original = ""
 
     diff = "\n".join(
-        difflib.ndiff(original, message_content)
+        difflib.ndiff(original.splitlines(), message_content.splitlines())
     )
 
     clickhouse.insert(
