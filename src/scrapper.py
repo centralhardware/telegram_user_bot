@@ -8,7 +8,7 @@ from typing import List
 from admin_utils import get_admins
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
-from utils import remove_empty_and_none, colorize
+from utils import remove_empty_and_none, colorize, colorize_diff
 
 # Batch for incoming messages
 INCOMING_BATCH_SIZE = 1000
@@ -202,9 +202,20 @@ async def save_edited(event):
         difflib.ndiff(original.splitlines(), message_content.splitlines())
     )
 
+    colored_diff = colorize_diff(diff)
+
     clickhouse.insert(
         "telegram_user_bot.edited_log",
-        [[datetime.now(), event.chat_id, event.message.id, message_content, diff, event.client._self_id]],
+        [
+            [
+                datetime.now(),
+                event.chat_id,
+                event.message.id,
+                message_content,
+                diff,
+                event.client._self_id,
+            ]
+        ],
         ["date_time", "chat_id", "message_id", "message", "diff", "client_id"],
     )
 
@@ -212,7 +223,7 @@ async def save_edited(event):
         colorize("edited", "edited   %12d %-25s %s"),
         event.message.id,
         getattr(event.chat, "title", "")[:20],
-        message_content,
+        colored_diff,
     )
 
 
