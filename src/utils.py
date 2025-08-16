@@ -13,7 +13,7 @@ def remove_empty_and_none(obj: Any):
 
 COLOR_MAP = {
     "incoming": "\033[92m",  # green
-    "outgoing": "\033[94m",  # blue
+    "outgoing": "\033[95m",  # magenta for better readability
     "deleted": "\033[91m",   # red
     "edited": "\033[93m",    # yellow
 }
