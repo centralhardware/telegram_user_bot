@@ -11,4 +11,17 @@ def remove_empty_and_none(obj: Any):
     return obj
 
 
-__all__ = ["remove_empty_and_none"]
+COLOR_MAP = {
+    "incoming": "\033[92m",  # green
+    "outgoing": "\033[94m",  # blue
+    "deleted": "\033[91m",   # red
+}
+
+
+def colorize(message_type: str, text: str) -> str:
+    color = COLOR_MAP.get(message_type, "")
+    reset = "\033[0m" if color else ""
+    return f"{color}{text}{reset}"
+
+
+__all__ = ["remove_empty_and_none", "colorize"]
