@@ -207,6 +207,9 @@ async def save_edited(event):
     except Exception:
         original = ""
 
+    if original == message_content:
+        return
+
     diff = "\n".join(
         difflib.ndiff(original.splitlines(), message_content.splitlines())
     )
