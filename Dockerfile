@@ -9,7 +9,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-compile --disable-pip-version-check -r requirements.txt \
+    pip install --no-compile --disable-pip-version-check -r requirements.txt
 
 COPY src/ .
 
