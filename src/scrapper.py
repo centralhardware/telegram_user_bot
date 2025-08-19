@@ -125,6 +125,7 @@ def flush_batches():
                 "date_time",
                 "chat_id",
                 "message_id",
+                "original_message",
                 "message",
                 "diff",
                 "user_id",
@@ -211,7 +212,11 @@ async def save_edited(event):
         return
 
     diff = "\n".join(
-        difflib.ndiff(original.splitlines(), message_content.splitlines())
+        difflib.unified_diff(
+            original.splitlines(),
+            message_content.splitlines(),
+            lineterm="",
+        )
     )
 
     user_id = event.message.sender_id or 0
@@ -221,6 +226,7 @@ async def save_edited(event):
             datetime.now(),
             event.chat_id,
             event.message.id,
+            original,
             message_content,
             diff,
             user_id,
