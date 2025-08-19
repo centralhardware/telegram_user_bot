@@ -12,6 +12,8 @@ def _get_chat_ids() -> List[str]:
 class Config:
     api_id = int(os.getenv("API_ID"))
     api_hash = os.getenv("API_HASH")
+    api_id_second = int(os.getenv("API_ID_SECOND"))
+    api_hash_second = os.getenv("API_HASH_SECOND")
     telephone = os.getenv("TELEPHONE")
     telephone_second = os.getenv("TELEPHONE_SECOND")
     db_user = os.getenv("CLICKHOUSE_USER")

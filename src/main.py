@@ -20,12 +20,12 @@ from fetch_sessions import fetch_user_sessions
 from auto_catbot import handle_catbot_trigger
 
 
-def create_client(session_name: str) -> TelegramClient:
-    """Create a Telegram client using the global config."""
+def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
+    """Create a Telegram client using provided API credentials."""
     return TelegramClient(
         session_name,
-        config.api_id,
-        config.api_hash,
+        api_id,
+        api_hash,
         device_model="Telegram Android",
         app_version="10.5.1",
     )
@@ -47,8 +47,10 @@ def run_flask():
 
 
 async def run_telegram_clients():
-    main_client = create_client("session/alex")
-    second_client = create_client("session/alex2")
+    main_client = create_client("session/alex", config.api_id, config.api_hash)
+    second_client = create_client(
+        "session/alex2", config.api_id_second, config.api_hash_second
+    )
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
