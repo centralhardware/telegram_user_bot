@@ -211,13 +211,16 @@ async def save_edited(event):
     if original == message_content:
         return
 
-    diff = "\n".join(
-        difflib.unified_diff(
-            original.splitlines(),
-            message_content.splitlines(),
-            lineterm="",
+    if original:
+        diff = "\n".join(
+            difflib.unified_diff(
+                original.splitlines(),
+                message_content.splitlines(),
+                lineterm="",
+            )
         )
-    )
+    else:
+        diff = ""
 
     user_id = event.message.sender_id or 0
 
