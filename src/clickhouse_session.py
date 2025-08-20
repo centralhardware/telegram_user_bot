@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Tuple, Dict, Any
 
 from telethon.crypto import AuthKey
 from telethon.sessions import MemorySession
@@ -30,7 +30,7 @@ class ClickHouseSession(MemorySession):
     def _load(self) -> None:
         client = get_clickhouse_client()
 
-        # Load session information
+        # Load session information (безопасно обрабатываем пустой результат)
         result = client.query(
             f"""
             SELECT dc_id, server_address, port, auth_key, takeout_id
@@ -41,13 +41,14 @@ class ClickHouseSession(MemorySession):
             """,
             {"name": self._name},
         )
-        row = result.first_row
-        if row:
-            dc_id, server_address, port, auth_key, takeout_id = row
+        rows = getattr(result, "result_rows", [])
+        if rows:
+            dc_id, server_address, port, auth_key, takeout_id = rows[0]
             self._dc_id = dc_id
             self._server_address = server_address
             self._port = port
             if auth_key:
+                # В ClickHouse тип String/Bytes хранит бинарник прозрачно
                 self._auth_key = AuthKey(data=auth_key)
             self._takeout_id = takeout_id
 
@@ -60,7 +61,8 @@ class ClickHouseSession(MemorySession):
             """,
             {"name": self._name},
         )
-        for entity_id, hash_, username, phone, name in result.result_rows:
+        for entity_id, hash_, username, phone, name in getattr(result, "result_rows", []):
+            # структура как в MemorySession._entities
             self._entities.add((entity_id, hash_, username, phone, name))
 
         # Load cached files
@@ -72,7 +74,7 @@ class ClickHouseSession(MemorySession):
             """,
             {"name": self._name},
         )
-        for md5_digest, file_size, type_, file_id, file_hash in result.result_rows:
+        for md5_digest, file_size, type_, file_id, file_hash in getattr(result, "result_rows", []):
             key = (md5_digest, file_size, _SentFileType(type_))
             self._files[key] = (file_id, file_hash)
 
@@ -85,11 +87,16 @@ class ClickHouseSession(MemorySession):
             """,
             {"name": self._name},
         )
-        for entity_id, pts, qts, date, seq in result.result_rows:
+        for entity_id, pts, qts, date, seq in getattr(result, "result_rows", []):
+            # нормализуем timezone -> naive UTC (Telethon хранит naive)
             if date.tzinfo is None:
-                date = date.replace(tzinfo=timezone.utc)
+                # считаем, что это UTC-naive
+                date_utc_naive = date
+            else:
+                date_utc_naive = date.astimezone(timezone.utc).replace(tzinfo=None)
+
             self._update_states[entity_id] = types.updates.State(
-                pts, qts, date, seq, unread_count=0
+                pts=pts, qts=qts, date=date_utc_naive, seq=seq, unread_count=0
             )
 
     # ------------------------------------------------------------------
@@ -97,22 +104,21 @@ class ClickHouseSession(MemorySession):
     # ------------------------------------------------------------------
     def save(self) -> None:  # type: ignore[override]
         client = get_clickhouse_client()
+        # Используем UTC-naive как в Telethon
         now = datetime.utcnow()
 
-        # Persist session information
+        # Persist session information — всегда INSERT (ReplacingMergeTree поглотит дубликаты)
         client.insert(
             self._SESSION_TABLE,
-            [
-                [
-                    self._name,
-                    self._dc_id,
-                    self._server_address or "",
-                    self._port or 0,
-                    self._auth_key.key if self._auth_key else b"",
-                    self._takeout_id,
-                    now,
-                ]
-            ],
+            [[
+                self._name,
+                self._dc_id,
+                self._server_address or "",
+                self._port or 0,
+                (self._auth_key.key if self._auth_key else b""),
+                self._takeout_id,
+                now,
+                ]],
             column_names=[
                 "name",
                 "dc_id",
@@ -126,9 +132,9 @@ class ClickHouseSession(MemorySession):
 
         # Persist cached entities
         if self._entities:
-            rows: List[List[object]] = []
+            rows_ent: List[List[object]] = []
             for entity_id, hash_, username, phone, name in self._entities:
-                rows.append([
+                rows_ent.append([
                     self._name,
                     entity_id,
                     hash_,
@@ -139,7 +145,7 @@ class ClickHouseSession(MemorySession):
                 ])
             client.insert(
                 self._ENTITY_TABLE,
-                rows,
+                rows_ent,
                 column_names=[
                     "name",
                     "id",
@@ -153,9 +159,9 @@ class ClickHouseSession(MemorySession):
 
         # Persist cached files
         if self._files:
-            rows: List[List[object]] = []
+            rows_files: List[List[object]] = []
             for (md5_digest, file_size, file_type), (file_id, file_hash) in self._files.items():
-                rows.append([
+                rows_files.append([
                     self._name,
                     md5_digest,
                     file_size,
@@ -166,7 +172,7 @@ class ClickHouseSession(MemorySession):
                 ])
             client.insert(
                 self._FILES_TABLE,
-                rows,
+                rows_files,
                 column_names=[
                     "name",
                     "md5_digest",
@@ -180,21 +186,25 @@ class ClickHouseSession(MemorySession):
 
         # Persist update states
         if self._update_states:
-            rows: List[List[object]] = []
+            rows_states: List[List[object]] = []
             for entity_id, state in self._update_states.items():
-                date = state.date.replace(tzinfo=None) if state.date.tzinfo else state.date
-                rows.append([
+                # приводим к naive (UTC) для согласованности с загрузкой
+                if state.date.tzinfo is None:
+                    date_naive = state.date
+                else:
+                    date_naive = state.date.astimezone(timezone.utc).replace(tzinfo=None)
+                rows_states.append([
                     self._name,
                     entity_id,
                     state.pts,
                     state.qts,
-                    date,
+                    date_naive,
                     state.seq,
                     now,
                 ])
             client.insert(
                 self._UPDATE_STATE_TABLE,
-                rows,
+                rows_states,
                 column_names=[
                     "name",
                     "id",
@@ -205,4 +215,3 @@ class ClickHouseSession(MemorySession):
                     "updated_at",
                 ],
             )
-
