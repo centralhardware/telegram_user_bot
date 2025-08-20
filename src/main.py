@@ -65,12 +65,7 @@ async def run_telegram_clients():
 
     scheduler = AsyncIOScheduler()
 
-    chat_ids = []
-    for cid in config.chat_ids:
-        try:
-            chat_ids.append(int(cid.strip()))
-        except ValueError:
-            logging.warning("Invalid chat ID skipped: %s", cid)
+    chat_ids = [int(cid.strip()) for cid in config.chat_ids if cid.strip().isdigit()]
     if main_client in started_clients:
         for chat_id in chat_ids:
             scheduler.add_job(
