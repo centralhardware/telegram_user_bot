@@ -54,7 +54,7 @@ async def run_telegram_clients():
         logging.error("Failed to start main client: %s", exc)
 
     try:
-        await main_client.connect()
+        await second_client.connect()
         started_clients.append(second_client)
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
