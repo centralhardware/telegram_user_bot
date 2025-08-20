@@ -31,8 +31,8 @@ def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClie
 
 
 async def run_telegram_clients():
-    main_client = create_client("alex", config.api_id, config.api_hash)
-    second_client = create_client("alex2", config.api_id_second, config.api_hash_second)
+    main_client = create_client("session/alex", config.api_id, config.api_hash)
+    second_client = create_client("session/alex2", config.api_id_second, config.api_hash_second)
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
@@ -48,13 +48,13 @@ async def run_telegram_clients():
     started_clients = []
 
     try:
-        await main_client.start(phone=config.telephone)
+        await main_client.connect()
         started_clients.append(main_client)
     except Exception as exc:
         logging.error("Failed to start main client: %s", exc)
 
     try:
-        await main_client.start(phone=config.telephone_second)
+        await main_client.connect()
         started_clients.append(second_client)
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
