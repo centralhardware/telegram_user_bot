@@ -51,14 +51,14 @@ async def run_telegram_clients():
     started_clients = []
 
     try:
-        await main_client.start(phone=config.telephone)
+        await main_client.connect()
         save_session("alex", main_client.session.save())
         started_clients.append(main_client)
     except Exception as exc:
         logging.error("Failed to start main client: %s", exc)
 
     try:
-        await second_client.start(phone=config.telephone_second)
+        await second_client.connect()
         save_session("alex2", second_client.session.save())
         started_clients.append(second_client)
     except Exception as exc:
