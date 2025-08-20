@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import binascii
+import logging
 from datetime import datetime, timezone
 from typing import List
 
@@ -10,23 +13,48 @@ from telethon.tl import types
 
 from clickhouse_utils import get_clickhouse_client
 
+log = logging.getLogger(__name__)
 
-def _to_bytes(v) -> bytes:
-    """Нормализует значение к bytes для двоичных полей из ClickHouse."""
-    if v is None:
-        return b""
-    if isinstance(v, bytes):
-        return v
-    if isinstance(v, bytearray):
-        return bytes(v)
-    if isinstance(v, memoryview):
-        return v.tobytes()
-    if isinstance(v, str):
-        # Если драйвер вернул str, кодируем без потерь в диапазоне 0..255.
-        # Это корректно, если исходно было сохранено как raw bytes в String.
-        return v.encode("latin1")
-    # На всякий случай пытаемся сконвертить «как есть»
-    return bytes(v)
+
+def _decode_auth_key(raw) -> bytes | None:
+    """
+    Превращает значение из ClickHouse в bytes для AuthKey.
+    Поддерживает bytes/bytearray/memoryview, hex-строку (твой случай), base64-строку.
+    Возвращает None, если ключ невалиден.
+    """
+    if raw is None:
+        return None
+
+    # уже bytes?
+    if isinstance(raw, (bytes, bytearray, memoryview)):
+        data = bytes(raw)
+    elif isinstance(raw, str):
+        s = raw.strip()
+        # 1) base64
+        try:
+            data = base64.b64decode(s, validate=True)
+        except Exception:
+            # 2) hex (512 символов = 256 байт; иногда 384 = 192 байта)
+            try:
+                s_hex = s.removeprefix("0x").removeprefix("0X").replace(" ", "")
+                data = binascii.unhexlify(s_hex)
+            except Exception:
+                # 3) крайний случай — raw-байты были записаны как String (latin1)
+                try:
+                    data = s.encode("latin1")
+                    log.warning("auth_key decoded via latin1 fallback — check storage format")
+                except Exception:
+                    return None
+    else:
+        try:
+            data = bytes(raw)
+        except Exception:
+            return None
+
+    if len(data) not in (256, 192):
+        log.error("Invalid auth_key length: %s bytes", len(data))
+        return None
+    return data
 
 
 class ClickHouseSession(MemorySession):
@@ -48,7 +76,11 @@ class ClickHouseSession(MemorySession):
     def _load(self) -> None:
         client = get_clickhouse_client()
 
-        # --- session info (безопасно обрабатываем пустой результат)
+        # >>> FIX: просим драйвер возвращать строки как bytes (если возможно)
+        # Если твой get_clickhouse_client уже задаёт этот setting глобально — хорошо.
+        settings = {"strings_as_bytes": True}
+
+        # --- session info
         result = client.query(
             f"""
             SELECT dc_id, server_address, port, auth_key, takeout_id
@@ -58,6 +90,7 @@ class ClickHouseSession(MemorySession):
             LIMIT 1
             """,
             {"name": self._name},
+            settings=settings,
         )
         rows = getattr(result, "result_rows", [])
         if rows:
@@ -65,10 +98,14 @@ class ClickHouseSession(MemorySession):
             self._dc_id = dc_id
             self._server_address = server_address
             self._port = port
-            if auth_key:
-                # КЛЮЧЕВОЙ ФИКС: приводим к bytes прежде чем скормить AuthKey
-                auth_key_bytes = _to_bytes(auth_key)
-                self._auth_key = AuthKey(data=auth_key_bytes)
+
+            # >>> FIX: корректно декодируем ключ и не принимаем пустышки
+            auth = _decode_auth_key(auth_key)
+            if auth:
+                self._auth_key = AuthKey(data=auth)
+            else:
+                self._auth_key = None
+
             self._takeout_id = takeout_id
 
         # --- cached entities
@@ -79,6 +116,7 @@ class ClickHouseSession(MemorySession):
             WHERE name = %(name)s
             """,
             {"name": self._name},
+            settings=settings,
         )
         for entity_id, hash_, username, phone, name in getattr(result, "result_rows", []):
             self._entities.add((entity_id, hash_, username, phone, name))
@@ -91,6 +129,7 @@ class ClickHouseSession(MemorySession):
             WHERE name = %(name)s
             """,
             {"name": self._name},
+            settings=settings,
         )
         for md5_digest, file_size, type_, file_id, file_hash in getattr(result, "result_rows", []):
             key = (md5_digest, file_size, _SentFileType(type_))
@@ -104,6 +143,7 @@ class ClickHouseSession(MemorySession):
             WHERE name = %(name)s
             """,
             {"name": self._name},
+            settings=settings,
         )
         for entity_id, pts, qts, date, seq in getattr(result, "result_rows", []):
             # нормализуем: Telethon использует naive UTC
@@ -122,7 +162,12 @@ class ClickHouseSession(MemorySession):
         client = get_clickhouse_client()
         now = datetime.utcnow()  # Telethon ожидает naive UTC
 
-        # --- session info: всегда INSERT (ReplacingMergeTree «заменит» по updated_at)
+        # >>> FIX: не сохраняем «пустой» ключ, пишем NULL
+        auth_bytes = None
+        if getattr(self, "_auth_key", None) and getattr(self._auth_key, "key", None):
+            auth_bytes = self._auth_key.key  # bytes
+
+        # --- session info
         client.insert(
             self._SESSION_TABLE,
             [[
@@ -130,7 +175,7 @@ class ClickHouseSession(MemorySession):
                 self._dc_id,
                 self._server_address or "",
                 self._port or 0,
-                (self._auth_key.key if self._auth_key else b""),
+                (memoryview(auth_bytes) if auth_bytes is not None else None),  # >>> FIX
                 self._takeout_id,
                 now,
                 ]],
@@ -143,6 +188,8 @@ class ClickHouseSession(MemorySession):
                 "takeout_id",
                 "updated_at",
             ],
+            # полезно: драйвер не будет конвертить строки в str
+            settings={"strings_as_bytes": True},
         )
 
         # --- cached entities
@@ -170,6 +217,7 @@ class ClickHouseSession(MemorySession):
                     "display_name",
                     "updated_at",
                 ],
+                settings={"strings_as_bytes": True},
             )
 
         # --- cached files
@@ -197,6 +245,7 @@ class ClickHouseSession(MemorySession):
                     "hash",
                     "updated_at",
                 ],
+                settings={"strings_as_bytes": True},
             )
 
         # --- update states
@@ -228,4 +277,5 @@ class ClickHouseSession(MemorySession):
                     "seq",
                     "updated_at",
                 ],
+                settings={"strings_as_bytes": True},
             )

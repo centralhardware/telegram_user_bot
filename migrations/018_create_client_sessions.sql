@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS client_sessions (
     dc_id UInt32,
     server_address String,
     port UInt32,
-    auth_key BLOB,
+    auth_key     Nullable(String) CODEC(ZSTD(3)),   -- сырые байты (BLOB)
     takeout_id Nullable(Int64),
     updated_at DateTime
 ) ENGINE = ReplacingMergeTree(updated_at)
