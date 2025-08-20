@@ -3,7 +3,6 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telethon import events, functions
-from clickhouse_session import ClickHouseSession
 
 from config import config
 from scrapper import (
@@ -22,7 +21,6 @@ from auto_catbot import handle_catbot_trigger
 def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
     """Create a Telegram client using provided API credentials."""
     return TelegramClient(
-        ClickHouseSession(session_name),
         api_id,
         api_hash,
         device_model="Telegram Android",
@@ -50,14 +48,12 @@ async def run_telegram_clients():
 
     try:
         await second_client.connect()
-        main_client.session.save()
         started_clients.append(main_client)
     except Exception as exc:
         logging.error("Failed to start main client: %s", exc)
 
     try:
         await second_client.connect()
-        second_client.session.save()
         started_clients.append(second_client)
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
