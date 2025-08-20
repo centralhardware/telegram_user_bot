@@ -105,7 +105,7 @@ async def run_telegram_clients():
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    logging.basicConfig(level=logging.DEBUG, format="%(message)s")
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
     logging.info("start application")
 
