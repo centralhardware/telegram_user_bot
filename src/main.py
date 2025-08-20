@@ -21,6 +21,7 @@ from auto_catbot import handle_catbot_trigger
 def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
     """Create a Telegram client using provided API credentials."""
     return TelegramClient(
+        session_name,
         api_id,
         api_hash,
         device_model="Telegram Android",
