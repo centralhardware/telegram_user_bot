@@ -3,6 +3,7 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telethon import events, functions
+from telethon.sessions import StringSession
 
 from config import config
 from scrapper import (
@@ -16,12 +17,14 @@ from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
 from auto_catbot import handle_catbot_trigger
+from session_storage import load_session, save_session
 
 
 def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
     """Create a Telegram client using provided API credentials."""
+    session = load_session(session_name) or ""
     return TelegramClient(
-        session_name,
+        StringSession(session),
         api_id,
         api_hash,
         device_model="Telegram Android",
@@ -31,10 +34,8 @@ def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClie
 
 
 async def run_telegram_clients():
-    main_client = create_client("session/alex", config.api_id, config.api_hash)
-    second_client = create_client(
-        "session/alex2", config.api_id_second, config.api_hash_second
-    )
+    main_client = create_client("alex", config.api_id, config.api_hash)
+    second_client = create_client("alex2", config.api_id_second, config.api_hash_second)
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
@@ -51,12 +52,14 @@ async def run_telegram_clients():
 
     try:
         await main_client.start(phone=config.telephone)
+        save_session("alex", main_client.session.save())
         started_clients.append(main_client)
     except Exception as exc:
         logging.error("Failed to start main client: %s", exc)
 
     try:
         await second_client.start(phone=config.telephone_second)
+        save_session("alex2", second_client.session.save())
         started_clients.append(second_client)
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
