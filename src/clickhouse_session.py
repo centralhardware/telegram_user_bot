@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import List, Tuple, Dict, Any
+from typing import List
 
 from telethon.crypto import AuthKey
 from telethon.sessions import MemorySession
@@ -11,8 +11,26 @@ from telethon.tl import types
 from clickhouse_utils import get_clickhouse_client
 
 
+def _to_bytes(v) -> bytes:
+    """Нормализует значение к bytes для двоичных полей из ClickHouse."""
+    if v is None:
+        return b""
+    if isinstance(v, bytes):
+        return v
+    if isinstance(v, bytearray):
+        return bytes(v)
+    if isinstance(v, memoryview):
+        return v.tobytes()
+    if isinstance(v, str):
+        # Если драйвер вернул str, кодируем без потерь в диапазоне 0..255.
+        # Это корректно, если исходно было сохранено как raw bytes в String.
+        return v.encode("latin1")
+    # На всякий случай пытаемся сконвертить «как есть»
+    return bytes(v)
+
+
 class ClickHouseSession(MemorySession):
-    """SQLite-like Telethon session persisted in ClickHouse."""
+    """Telethon session, сохранённая в ClickHouse (аналог SQLite-сессии)."""
 
     _SESSION_TABLE = "telegram_user_bot.client_sessions"
     _ENTITY_TABLE = "telegram_user_bot.client_session_entities"
@@ -30,7 +48,7 @@ class ClickHouseSession(MemorySession):
     def _load(self) -> None:
         client = get_clickhouse_client()
 
-        # Load session information (безопасно обрабатываем пустой результат)
+        # --- session info (безопасно обрабатываем пустой результат)
         result = client.query(
             f"""
             SELECT dc_id, server_address, port, auth_key, takeout_id
@@ -48,11 +66,12 @@ class ClickHouseSession(MemorySession):
             self._server_address = server_address
             self._port = port
             if auth_key:
-                # В ClickHouse тип String/Bytes хранит бинарник прозрачно
-                self._auth_key = AuthKey(data=auth_key)
+                # КЛЮЧЕВОЙ ФИКС: приводим к bytes прежде чем скормить AuthKey
+                auth_key_bytes = _to_bytes(auth_key)
+                self._auth_key = AuthKey(data=auth_key_bytes)
             self._takeout_id = takeout_id
 
-        # Load cached entities
+        # --- cached entities
         result = client.query(
             f"""
             SELECT id, hash, username, phone, display_name
@@ -62,10 +81,9 @@ class ClickHouseSession(MemorySession):
             {"name": self._name},
         )
         for entity_id, hash_, username, phone, name in getattr(result, "result_rows", []):
-            # структура как в MemorySession._entities
             self._entities.add((entity_id, hash_, username, phone, name))
 
-        # Load cached files
+        # --- cached files
         result = client.query(
             f"""
             SELECT md5_digest, file_size, type, id, hash
@@ -78,7 +96,7 @@ class ClickHouseSession(MemorySession):
             key = (md5_digest, file_size, _SentFileType(type_))
             self._files[key] = (file_id, file_hash)
 
-        # Load update states
+        # --- update states
         result = client.query(
             f"""
             SELECT id, pts, qts, date, seq
@@ -88,13 +106,11 @@ class ClickHouseSession(MemorySession):
             {"name": self._name},
         )
         for entity_id, pts, qts, date, seq in getattr(result, "result_rows", []):
-            # нормализуем timezone -> naive UTC (Telethon хранит naive)
+            # нормализуем: Telethon использует naive UTC
             if date.tzinfo is None:
-                # считаем, что это UTC-naive
                 date_utc_naive = date
             else:
                 date_utc_naive = date.astimezone(timezone.utc).replace(tzinfo=None)
-
             self._update_states[entity_id] = types.updates.State(
                 pts=pts, qts=qts, date=date_utc_naive, seq=seq, unread_count=0
             )
@@ -104,10 +120,9 @@ class ClickHouseSession(MemorySession):
     # ------------------------------------------------------------------
     def save(self) -> None:  # type: ignore[override]
         client = get_clickhouse_client()
-        # Используем UTC-naive как в Telethon
-        now = datetime.utcnow()
+        now = datetime.utcnow()  # Telethon ожидает naive UTC
 
-        # Persist session information — всегда INSERT (ReplacingMergeTree поглотит дубликаты)
+        # --- session info: всегда INSERT (ReplacingMergeTree «заменит» по updated_at)
         client.insert(
             self._SESSION_TABLE,
             [[
@@ -130,7 +145,7 @@ class ClickHouseSession(MemorySession):
             ],
         )
 
-        # Persist cached entities
+        # --- cached entities
         if self._entities:
             rows_ent: List[List[object]] = []
             for entity_id, hash_, username, phone, name in self._entities:
@@ -157,7 +172,7 @@ class ClickHouseSession(MemorySession):
                 ],
             )
 
-        # Persist cached files
+        # --- cached files
         if self._files:
             rows_files: List[List[object]] = []
             for (md5_digest, file_size, file_type), (file_id, file_hash) in self._files.items():
@@ -184,11 +199,10 @@ class ClickHouseSession(MemorySession):
                 ],
             )
 
-        # Persist update states
+        # --- update states
         if self._update_states:
             rows_states: List[List[object]] = []
             for entity_id, state in self._update_states.items():
-                # приводим к naive (UTC) для согласованности с загрузкой
                 if state.date.tzinfo is None:
                     date_naive = state.date
                 else:
