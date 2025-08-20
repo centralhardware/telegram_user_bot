@@ -4,7 +4,7 @@ import base64
 import binascii
 import logging
 from datetime import datetime, timezone
-from typing import List, Tuple, Optional, Any, Iterable
+from typing import List, Optional, Any
 
 from telethon.crypto import AuthKey
 from telethon.sessions import MemorySession
@@ -16,11 +16,11 @@ from clickhouse_utils import get_clickhouse_client
 """
 ClickHouse-backed Telethon session.
 
-Ключевые отличия от исходной версии:
-- Правильная загрузка auth_key из ClickHouse: поддержка RAW bytes, HEX-строк и base64.
-- Запрещаем сохранять "пустой" ключ: пишем NULL в Nullable(String).
-- Не используем недоступные для clickhouse-connect settings.
-- Нормализуем даты к naive UTC (как ожидает Telethon).
+Изменения:
+- Декодер auth_key: ПРИОРИТЕТ HEX -> затем base64 -> затем latin1 fallback.
+- Не сохраняем пустой ключ (пишем NULL в Nullable(String)).
+- phone всегда сохраняем как Nullable(String), а не Int64.
+- Без driver-specific settings (clickhouse-connect).
 """
 
 log = logging.getLogger(__name__)
@@ -29,9 +29,7 @@ log = logging.getLogger(__name__)
 def _decode_auth_key(raw: Any) -> Optional[bytes]:
     """
     Превращает значение из ClickHouse в bytes для AuthKey.
-    Поддерживает bytes/bytearray/memoryview, hex-строку (512/384 символов), base64-строку,
-    а также крайний случай "raw-байты в String" через latin1.
-    Возвращает None, если ключ невалиден.
+    Порядок: HEX -> base64 -> latin1 fallback.
     """
     if raw is None:
         return None
@@ -39,20 +37,23 @@ def _decode_auth_key(raw: Any) -> Optional[bytes]:
     # Уже bytes?
     if isinstance(raw, (bytes, bytearray, memoryview)):
         data = bytes(raw)
-
     elif isinstance(raw, str):
         s = raw.strip()
 
-        # 1) base64
+        # 1) HEX (512 симв. = 256 байт; 384 = 192 байта). HEX-алфавит — подмножество base64,
+        # поэтому HEX должен быть раньше base64.
         try:
-            data = base64.b64decode(s, validate=True)
-        except Exception:
-            # 2) hex (512 симв. = 256 байт; 384 = 192 байта)
-            try:
-                s_hex = s.removeprefix("0x").removeprefix("0X").replace(" ", "")
+            s_hex = s.removeprefix("0x").removeprefix("0X").replace(" ", "")
+            if len(s_hex) % 2 == 0 and all(c in "0123456789abcdefABCDEF" for c in s_hex):
                 data = binascii.unhexlify(s_hex)
+            else:
+                raise ValueError("not hex")
+        except Exception:
+            # 2) base64
+            try:
+                data = base64.b64decode(s, validate=True)
             except Exception:
-                # 3) fallback: интерпретируем как "сырые байты" через latin1
+                # 3) fallback: «сырые байты» были записаны в String
                 try:
                     data = s.encode("latin1")
                     log.warning("auth_key decoded via latin1 fallback — check storage format")
@@ -64,11 +65,22 @@ def _decode_auth_key(raw: Any) -> Optional[bytes]:
         except Exception:
             return None
 
-    # Telethon обычно ожидает 256 байт (2048 бит), допустимы и 192 на старых ключах
+    # Telethon обычно ожидает 256 байт (2048 бит), допустимо и 192
     if len(data) not in (256, 192):
         log.error("Invalid auth_key length: %s bytes", len(data))
         return None
     return data
+
+
+def _normalize_phone(phone: Any) -> Optional[str]:
+    """
+    Храним телефон как строку (или NULL). Никаких Int64.
+    """
+    if phone is None:
+        return None
+    # Telethon отдаёт строку или None; на всякий — приводим к str.
+    s = str(phone).strip()
+    return s if s else None
 
 
 class ClickHouseSession(MemorySession):
@@ -90,7 +102,7 @@ class ClickHouseSession(MemorySession):
     def _load(self) -> None:
         client = get_clickhouse_client()
 
-        # --- session info (безопасно обрабатываем пустой результат)
+        # --- session info
         result = client.query(
             f"""
             SELECT dc_id, server_address, port, auth_key, takeout_id
@@ -108,13 +120,8 @@ class ClickHouseSession(MemorySession):
             self._server_address = server_address
             self._port = port
 
-            # Корректно декодируем ключ и не принимаем пустышки
             auth = _decode_auth_key(auth_key)
-            if auth:
-                self._auth_key = AuthKey(data=auth)
-            else:
-                self._auth_key = None
-
+            self._auth_key = AuthKey(data=auth) if auth else None
             self._takeout_id = takeout_id
 
         # --- cached entities
@@ -152,7 +159,6 @@ class ClickHouseSession(MemorySession):
             {"name": self._name},
         )
         for entity_id, pts, qts, date, seq in getattr(result, "result_rows", []):
-            # Telethon использует naive UTC
             if date is None:
                 continue
             if getattr(date, "tzinfo", None) is None:
@@ -170,12 +176,12 @@ class ClickHouseSession(MemorySession):
         client = get_clickhouse_client()
         now = datetime.utcnow()  # Telethon ожидает naive UTC
 
-        # Не сохраняем "пустой" ключ — пишем NULL в Nullable(String)
+        # Не сохраняем "пустой" ключ — пишем NULL
         auth_bytes: Optional[bytes] = None
         if getattr(self, "_auth_key", None) and getattr(self._auth_key, "key", None):
             auth_bytes = self._auth_key.key  # bytes
 
-        # --- session info: всегда INSERT (ReplacingMergeTree «заменит» по updated_at)
+        # --- session info
         client.insert(
             self._SESSION_TABLE,
             [[
@@ -207,7 +213,7 @@ class ClickHouseSession(MemorySession):
                     entity_id,
                     hash_,
                     username,
-                    phone,
+                    _normalize_phone(phone),  # <- строка или NULL
                     name,
                     now,
                 ])
