@@ -1,9 +1,7 @@
 import asyncio
 import logging
-import threading
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from flask import Flask, jsonify
 from telethon import events, functions
 
 from config import config
@@ -30,20 +28,6 @@ def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClie
         app_version="10.5.1",
     )
 
-
-app = Flask(__name__)
-
-
-@app.route("/health")
-def health():
-    resp = jsonify(health="healthy")
-    resp.status_code = 200
-    return resp
-
-
-def run_flask():
-    logging.getLogger("werkzeug").setLevel(logging.WARNING)
-    app.run(host="0.0.0.0", port=80, use_reloader=False)
 
 
 async def run_telegram_clients():
@@ -123,9 +107,6 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
     logging.info("start application")
-
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
 
     asyncio.run(run_telegram_clients())
 
