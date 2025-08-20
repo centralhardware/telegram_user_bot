@@ -55,7 +55,7 @@ async def run_telegram_clients():
 
     try:
         await main_client.start(phone=config.telephone_second)
-    started_clients.append(second_client)
+        started_clients.append(second_client)
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
 
