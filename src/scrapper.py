@@ -189,8 +189,6 @@ async def save_edited(event):
         return
 
     message_content = event.raw_text
-    if not message_content:
-        return
 
     clickhouse = get_clickhouse_client()
 
@@ -208,19 +206,16 @@ async def save_edited(event):
     except Exception:
         original = ""
 
-    if original == message_content:
+    if not original or not message_content or  original == message_content:
         return
 
-    if original:
-        diff = "\n".join(
-            difflib.unified_diff(
-                original.splitlines(),
-                message_content.splitlines(),
-                lineterm="",
-            )
+    diff = "\n".join(
+        difflib.unified_diff(
+            original.splitlines(),
+            message_content.splitlines(),
+            lineterm="",
         )
-    else:
-        diff = ""
+    )
 
     user_id = event.message.sender_id or 0
 
