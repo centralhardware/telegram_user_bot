@@ -12,6 +12,7 @@ from utils import remove_empty_and_none, colorize
 
 incoming_batch: List[List] = []
 edited_batch: List[List] = []
+deleted_batch: List[List] = []
 
 
 async def save_outgoing(event):
@@ -134,6 +135,10 @@ def flush_batches():
         )
         logging.info(f"Saved {len(edited_batch)} edited messages")
         edited_batch.clear()
+    if deleted_batch:
+        save_del(deleted_batch)
+        logging.info(f"Saved {len(deleted_batch)} deleted messages")
+        deleted_batch.clear()
 
 
 async def save_incoming(event):
@@ -206,7 +211,7 @@ async def save_edited(event):
     except Exception:
         original = ""
 
-    if not original or not message_content or  original == message_content:
+    if not original or not message_content or original == message_content:
         return
 
     diff = "\n".join(
@@ -246,7 +251,9 @@ async def save_deleted(event):
 
     clickhouse = get_clickhouse_client()
     for msg_id in event.deleted_ids:
-        save_del([[datetime.now(), event.chat_id, msg_id, event.client._self_id]])
+        deleted_batch.append(
+            [datetime.now(), event.chat_id, msg_id, event.client._self_id]
+        )
 
         try:
             chat_title = clickhouse.query(
