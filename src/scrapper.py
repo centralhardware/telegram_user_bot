@@ -201,7 +201,7 @@ async def save_edited(event):
         original = clickhouse.query(
             """
         SELECT message
-        FROM telegram_user_bot.chats_log
+        FROM telegram_user_bot.edited_log
         WHERE chat_id = {chat_id:Int64} AND message_id = {message_id:Int64}
         ORDER BY date_time DESC
         LIMIT 1
@@ -210,6 +210,21 @@ async def save_edited(event):
         ).result_rows[0][0]
     except Exception:
         original = ""
+
+    if not original:
+        try:
+            original = clickhouse.query(
+                """
+            SELECT message
+            FROM telegram_user_bot.chats_log
+            WHERE chat_id = {chat_id:Int64} AND message_id = {message_id:Int64}
+            ORDER BY date_time DESC
+            LIMIT 1
+            """,
+                {"chat_id": event.chat_id, "message_id": event.message.id},
+            ).result_rows[0][0]
+        except Exception:
+            original = ""
 
     if not original or not message_content or original == message_content:
         return
