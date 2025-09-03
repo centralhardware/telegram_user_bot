@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from difflib import unified_diff
 from typing import Any, List
 
+from telethon import utils
 from telethon.tl.functions.channels import GetAdminLogRequest
 
 from clickhouse_utils import get_clickhouse_client
@@ -77,7 +78,7 @@ def build_event_maps(events):
     title_map = {}
 
     for user in events.users:
-        title_map[user.id] = f"{user.first_name or ''} {user.last_name or ''}".strip()
+        title_map[user.id] = utils.get_display_name(user)
         usernames_map[user.id] = extract_usernames(user)
 
     chat_map = {chat.id: extract_usernames(chat) for chat in events.chats}

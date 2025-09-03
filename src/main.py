@@ -29,10 +29,13 @@ def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClie
     )
 
 
-
 async def run_telegram_clients():
     main_client = create_client("session/alex", config.api_id, config.api_hash)
-    second_client = create_client("session/alex2", config.api_id_second, config.api_hash_second)
+    second_client = create_client(
+        "session/alex2",
+        config.api_id_second,
+        config.api_hash_second,
+    )
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())

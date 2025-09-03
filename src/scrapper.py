@@ -5,6 +5,7 @@ import difflib
 from datetime import datetime
 from typing import List
 
+from telethon import utils
 from admin_utils import get_admins
 from username_utils import extract_usernames
 from clickhouse_utils import get_clickhouse_client
@@ -17,26 +18,10 @@ deleted_batch: List[List] = []
 
 async def save_outgoing(event):
     clickhouse = get_clickhouse_client()
-    chat_title = ""
-
-    if hasattr(event.chat, "title"):
-        chat_title = event.chat.title
-    else:
-        if (
-            event.chat is not None
-            and event.chat.bot
-            and hasattr(event.chat, "first_name")
-        ):
-            chat_title = event.chat.first_name
-
     chat = await event.get_chat()
     chat_usernames = extract_usernames(chat)
-
-    if hasattr(chat, "first_name"):
-        last_name = chat.last_name if chat.last_name is not None else ""
-        chat_title = chat.first_name + " " + last_name
-
-    if chat_title == "":
+    chat_title = utils.get_display_name(chat)
+    if not chat_title:
         if chat_usernames:
             chat_title = chat_usernames[0]
         else:
