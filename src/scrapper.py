@@ -30,14 +30,17 @@ async def save_outgoing(event):
             chat_title = event.chat.first_name
 
     chat = await event.get_chat()
-    chat_id = extract_usernames(chat)
+    chat_usernames = extract_usernames(chat)
 
     if hasattr(chat, "first_name"):
         last_name = chat.last_name if chat.last_name is not None else ""
         chat_title = chat.first_name + " " + last_name
 
     if chat_title == "":
-        chat_title = chat_id[0]
+        if chat_usernames:
+            chat_title = chat_usernames[0]
+        else:
+            chat_title = str(event.chat_id)
 
     admins = await get_admins(event.chat, event.client)
     message_dict = remove_empty_and_none(event.message.to_dict())
@@ -55,7 +58,7 @@ async def save_outgoing(event):
             event.raw_text,
             message_json,
             chat_title,
-            chat_id,
+            chat_usernames,
             event.chat_id,
             admins,
             event.message.id,
