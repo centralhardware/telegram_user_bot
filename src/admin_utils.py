@@ -1,3 +1,4 @@
+from telethon.client.chats import _MAX_PARTICIPANTS_CHUNK_SIZE
 from telethon.tl.types import ChatParticipantCreator
 
 from username_utils import extract_usernames
@@ -8,9 +9,10 @@ def build_username(user):
     return f"@{usernames[0]}" if usernames else ""
 
 
-async def get_admins(chat, client, limit=50):
+async def get_admins(chat, client, limit=50, requests_limit=5):
     admins = []
-    async for user in client.iter_participants(chat):
+    max_participants = _MAX_PARTICIPANTS_CHUNK_SIZE * requests_limit
+    async for user in client.iter_participants(chat, limit=max_participants):
         try:
             if user.bot:
                 continue
