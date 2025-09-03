@@ -101,10 +101,14 @@ def save_del(data):
 
 
 def flush_batches():
+    incoming_count = len(incoming_batch)
+    edited_count = len(edited_batch)
+    deleted_count = len(deleted_batch)
+
     if incoming_batch:
         save_inc(incoming_batch)
-        logging.info(f"Saved {len(incoming_batch)} incoming messages")
         incoming_batch.clear()
+
     if edited_batch:
         clickhouse = get_clickhouse_client()
         clickhouse.insert(
@@ -121,12 +125,19 @@ def flush_batches():
                 "client_id",
             ],
         )
-        logging.info(f"Saved {len(edited_batch)} edited messages")
         edited_batch.clear()
+
     if deleted_batch:
         save_del(deleted_batch)
-        logging.info(f"Saved {len(deleted_batch)} deleted messages")
         deleted_batch.clear()
+
+    if incoming_count or edited_count or deleted_count:
+        logging.info(
+            "Saved %s incoming, %s edited, %s deleted messages",
+            incoming_count,
+            edited_count,
+            deleted_count,
+        )
 
 
 async def save_incoming(event):
