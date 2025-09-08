@@ -3,6 +3,7 @@ import logging
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from telethon import events, functions
+from telethon.errors import AuthKeyUnregisteredError
 
 from config import config
 from scrapper import (
@@ -52,13 +53,19 @@ async def run_telegram_clients():
 
     try:
         await main_client.connect()
-        started_clients.append(main_client)
+        if await main_client.is_user_authorized():
+            started_clients.append(main_client)
+        else:
+            logging.error("Main client is not authorized.")
     except Exception as exc:
         logging.error("Failed to start main client: %s", exc)
 
     try:
         await second_client.connect()
-        started_clients.append(second_client)
+        if await second_client.is_user_authorized():
+            started_clients.append(second_client)
+        else:
+            logging.error("Second client is not authorized.")
     except Exception as exc:
         logging.error("Failed to start second client: %s", exc)
 
@@ -85,9 +92,17 @@ async def run_telegram_clients():
     scheduler.start()
 
     for client in started_clients:
-        await client(
-            functions.account.SetContentSettingsRequest(sensitive_enabled=True)
-        )
+        try:
+            await client(
+                functions.account.SetContentSettingsRequest(
+                    sensitive_enabled=True
+                )
+            )
+        except AuthKeyUnregisteredError:
+            logging.error(
+                "Auth key for client %s is unregistered",
+                getattr(getattr(client, "session", None), "filename", "unknown"),
+            )
 
     async def run_client(client, label: str):
         try:
