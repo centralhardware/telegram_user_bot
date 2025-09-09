@@ -287,14 +287,27 @@ async def save_deleted(event):
             message = clickhouse.query(
                 """
             SELECT message
-            FROM telegram_user_bot.chats_log
-            WHERE chat_id = {chat_id:Int64} and message_id = {message_id:Int64}
+            FROM telegram_user_bot.edited_log
+            WHERE chat_id = {chat_id:Int64} AND message_id = {message_id:Int64}
+            ORDER BY date_time DESC
             LIMIT 1
             """,
                 {"chat_id": event.chat_id, "message_id": msg_id},
             ).result_rows[0][0]
         except Exception:
-            message = msg_id
+            try:
+                message = clickhouse.query(
+                    """
+                SELECT message
+                FROM telegram_user_bot.chats_log
+                WHERE chat_id = {chat_id:Int64} AND message_id = {message_id:Int64}
+                ORDER BY date_time DESC
+                LIMIT 1
+                """,
+                    {"chat_id": event.chat_id, "message_id": msg_id},
+                ).result_rows[0][0]
+            except Exception:
+                message = msg_id
 
         logging.info(
             colorize("deleted", "deleted  %12d %-25s %s"),
