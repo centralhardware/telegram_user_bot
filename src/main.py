@@ -11,6 +11,7 @@ from scrapper import (
     save_incoming,
     save_deleted,
     save_edited,
+    save_reactions,
     flush_batches,
 )
 from telethon import TelegramClient
@@ -32,20 +33,22 @@ def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClie
 
 async def run_telegram_clients():
     main_client = create_client("session/alex", config.api_id, config.api_hash)
-    second_client = create_client(
-        "session/alex2",
-        config.api_id_second,
-        config.api_hash_second,
-    )
+    # second_client = create_client(
+    #     "session/alex2",
+    #     config.api_id_second,
+    #     config.api_hash_second,
+    # )
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
     main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     main_client.add_event_handler(save_edited, events.MessageEdited())
-    second_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
-    second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    second_client.add_event_handler(save_deleted, events.MessageDeleted())
-    second_client.add_event_handler(save_edited, events.MessageEdited())
+    main_client.add_event_handler(save_reactions, events.Raw())
+    # second_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
+    # second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
+    # second_client.add_event_handler(save_deleted, events.MessageDeleted())
+    # second_client.add_event_handler(save_edited, events.MessageEdited())
+    # second_client.add_event_handler(save_reactions, events.Raw())
 
     main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 
@@ -60,14 +63,14 @@ async def run_telegram_clients():
     except Exception as exc:
         logging.error("Failed to start main client: %s", exc)
 
-    try:
-        await second_client.connect()
-        if await second_client.is_user_authorized():
-            started_clients.append(second_client)
-        else:
-            logging.error("Second client is not authorized.")
-    except Exception as exc:
-        logging.error("Failed to start second client: %s", exc)
+    # try:
+    #     await second_client.connect()
+    #     if await second_client.is_user_authorized():
+    #         started_clients.append(second_client)
+    #     else:
+    #         logging.error("Second client is not authorized.")
+    # except Exception as exc:
+    #     logging.error("Failed to start second client: %s", exc)
 
     if not started_clients:
         logging.error("No telegram clients could be started.")
@@ -110,7 +113,7 @@ async def run_telegram_clients():
         except Exception as exc:
             logging.exception("%s client stopped due to error: %s", label, exc)
 
-    client_labels = {main_client: "main", second_client: "second"}
+    client_labels = {main_client: "main"}
     tasks = [
         asyncio.create_task(run_client(client, client_labels.get(client, "unknown")))
         for client in started_clients
