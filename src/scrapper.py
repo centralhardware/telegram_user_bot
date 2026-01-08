@@ -339,7 +339,7 @@ async def save_reactions(event):
     """Save message reactions to database.
 
     This handler processes UpdateMessageReactions events from Telegram.
-    It saves a snapshot of all current reactions for a message.
+    It saves a snapshot of all current reactions for a message (without user info).
     """
     from telethon.tl.types import (
         UpdateMessageReactions,
@@ -370,23 +370,21 @@ async def save_reactions(event):
     message_id = event.msg_id
     client_id = event._client._self_id
 
-    # Collect all current reactions
+    # Collect all current reactions (only the reaction itself, not who reacted)
     reactions_array = []
 
     if hasattr(event, 'reactions') and event.reactions:
         if hasattr(event.reactions, 'recent_reactions') and event.reactions.recent_reactions:
             for reaction_obj in event.reactions.recent_reactions:
                 if isinstance(reaction_obj, MessagePeerReaction):
-                    user_id = reaction_obj.peer_id.user_id if hasattr(reaction_obj.peer_id, 'user_id') else 0
-
                     reaction_str = ""
                     if isinstance(reaction_obj.reaction, ReactionEmoji):
                         reaction_str = reaction_obj.reaction.emoticon
                     elif isinstance(reaction_obj.reaction, ReactionCustomEmoji):
                         reaction_str = f"custom_{reaction_obj.reaction.document_id}"
 
-                    if reaction_str and user_id:
-                        reactions_array.append((user_id, reaction_str))
+                    if reaction_str:
+                        reactions_array.append(reaction_str)
 
     # Save the current snapshot of reactions
     reactions_batch.append([
