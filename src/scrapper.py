@@ -370,8 +370,7 @@ async def save_reactions(event):
     message_id = event.msg_id
     client_id = event._client._self_id
 
-    # Collect all current reactions (only the reaction itself, not who reacted)
-    reactions_array = []
+    reactions_set = set()
 
     if hasattr(event, 'reactions') and event.reactions:
         if hasattr(event.reactions, 'recent_reactions') and event.reactions.recent_reactions:
@@ -384,7 +383,9 @@ async def save_reactions(event):
                         reaction_str = f"custom_{reaction_obj.reaction.document_id}"
 
                     if reaction_str:
-                        reactions_array.append(reaction_str)
+                        reactions_set.add(reaction_str)
+
+    reactions_array = list(reactions_set)
 
     # Save the current snapshot of reactions
     reactions_batch.append([
