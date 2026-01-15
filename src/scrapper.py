@@ -397,10 +397,10 @@ async def save_reactions(event):
     ])
 
     logging.info(
-        colorize("reactions", "reactions  %12d chat %d: %d reactions"),
+        colorize("reactions", "reactions  %12d chat %d: %s"),
         message_id,
         chat_id,
-        len(reactions_array),
+        " ".join(reactions_array) if reactions_array else "(none)",
     )
 
 
