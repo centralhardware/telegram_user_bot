@@ -370,6 +370,21 @@ async def save_reactions(event):
     message_id = event.msg_id
     client_id = event._client._self_id
 
+    clickhouse = get_clickhouse_client()
+    try:
+        chat_title = clickhouse.query(
+            """
+        SELECT chat_title
+        FROM telegram_user_bot.chats_log
+        WHERE chat_id = {chat_id:Int64}
+        ORDER BY date_time DESC
+        LIMIT 1
+        """,
+            {"chat_id": chat_id},
+        ).result_rows[0][0]
+    except Exception:
+        chat_title = str(chat_id)
+
     reactions_set = set()
 
     if hasattr(event, 'reactions') and event.reactions:
@@ -397,9 +412,9 @@ async def save_reactions(event):
     ])
 
     logging.info(
-        colorize("reactions", "reactions  %12d chat %d: %s"),
+        colorize("reactions", "reactions  %12d %-25s %s"),
         message_id,
-        chat_id,
+        chat_title[:20] if chat_title else str(chat_id),
         " ".join(reactions_array) if reactions_array else "(none)",
     )
 
