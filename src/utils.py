@@ -16,7 +16,6 @@ COLOR_MAP = {
     "outgoing": "\033[95m",  # magenta for better readability
     "deleted": "\033[91m",   # red
     "edited": "\033[93m",    # yellow
-    "reactions": "\033[94m",  # blue
 }
 
 

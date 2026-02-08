@@ -14,7 +14,6 @@ from utils import remove_empty_and_none, colorize
 incoming_batch: List[List] = []
 edited_batch: List[List] = []
 deleted_batch: List[List] = []
-reactions_batch: List[List] = []
 
 
 async def save_outgoing(event):
@@ -105,7 +104,6 @@ def flush_batches():
     incoming_count = len(incoming_batch)
     edited_count = len(edited_batch)
     deleted_count = len(deleted_batch)
-    reactions_count = len(reactions_batch)
 
     if incoming_batch:
         save_inc(incoming_batch)
@@ -133,28 +131,12 @@ def flush_batches():
         save_del(deleted_batch)
         deleted_batch.clear()
 
-    if reactions_batch:
-        clickhouse = get_clickhouse_client()
-        clickhouse.insert(
-            "telegram_user_bot.reactions_log",
-            reactions_batch,
-            [
-                "date_time",
-                "chat_id",
-                "message_id",
-                "reactions",
-                "client_id",
-            ],
-        )
-        reactions_batch.clear()
-
-    if incoming_count or edited_count or deleted_count or reactions_count:
+    if incoming_count or edited_count or deleted_count:
         logging.info(
-            "Saved %s incoming, %s edited, %s deleted messages, %s reaction updates",
+            "Saved %s incoming, %s edited, %s deleted messages",
             incoming_count,
             edited_count,
             deleted_count,
-            reactions_count,
         )
 
 
@@ -333,90 +315,6 @@ async def save_deleted(event):
             str(chat_title)[:20],
             message,
         )
-
-
-async def save_reactions(event):
-    """Save message reactions to database.
-
-    This handler processes UpdateMessageReactions events from Telegram.
-    It saves a snapshot of all current reactions for a message (without user info).
-    """
-    from telethon.tl.types import (
-        UpdateMessageReactions,
-        ReactionEmoji,
-        ReactionCustomEmoji,
-        MessagePeerReaction,
-    )
-
-    if not isinstance(event, UpdateMessageReactions):
-        return
-
-    chat_id = None
-
-    if hasattr(event, 'peer'):
-        from telethon.tl.types import PeerChannel, PeerChat, PeerUser
-        peer = event.peer
-
-        if isinstance(peer, PeerChannel):
-            chat_id = -1000000000000 - peer.channel_id
-        elif isinstance(peer, PeerChat):
-            chat_id = -peer.chat_id
-        elif isinstance(peer, PeerUser):
-            chat_id = peer.user_id
-
-    if chat_id is None:
-        return
-
-    message_id = event.msg_id
-    client_id = event._client._self_id
-
-    clickhouse = get_clickhouse_client()
-    try:
-        chat_title = clickhouse.query(
-            """
-        SELECT chat_title
-        FROM telegram_user_bot.chats_log
-        WHERE chat_id = {chat_id:Int64}
-        ORDER BY date_time DESC
-        LIMIT 1
-        """,
-            {"chat_id": chat_id},
-        ).result_rows[0][0]
-    except Exception:
-        chat_title = str(chat_id)
-
-    reactions_set = set()
-
-    if hasattr(event, 'reactions') and event.reactions:
-        if hasattr(event.reactions, 'recent_reactions') and event.reactions.recent_reactions:
-            for reaction_obj in event.reactions.recent_reactions:
-                if isinstance(reaction_obj, MessagePeerReaction):
-                    reaction_str = ""
-                    if isinstance(reaction_obj.reaction, ReactionEmoji):
-                        reaction_str = reaction_obj.reaction.emoticon
-                    elif isinstance(reaction_obj.reaction, ReactionCustomEmoji):
-                        reaction_str = f"custom_{reaction_obj.reaction.document_id}"
-
-                    if reaction_str:
-                        reactions_set.add(reaction_str)
-
-    reactions_array = list(reactions_set)
-
-    # Save the current snapshot of reactions
-    reactions_batch.append([
-        datetime.now(),
-        chat_id,
-        message_id,
-        reactions_array,
-        client_id,
-    ])
-
-    logging.info(
-        colorize("reactions", "reactions  %12d %-25s %s"),
-        message_id,
-        chat_title[:20] if chat_title else str(chat_id),
-        " ".join(reactions_array) if reactions_array else "(none)",
-    )
 
 
 atexit.register(flush_batches)
