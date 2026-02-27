@@ -15,8 +15,6 @@ from scrapper import (
 )
 from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
-from fetch_sessions import fetch_user_sessions
-
 
 def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
     """Create a Telegram client using provided API credentials."""
@@ -83,9 +81,9 @@ async def run_telegram_clients():
                 minutes=1,
                 args=[main_client, chat_id],
             )
-        scheduler.add_job(
-            fetch_user_sessions, "interval", minutes=1, args=[main_client]
-        )
+        # scheduler.add_job(
+        #     fetch_user_sessions, "interval", minutes=1, args=[main_client]
+        # )
 
     scheduler.add_job(flush_batches, "interval", seconds=10)
     scheduler.start()
