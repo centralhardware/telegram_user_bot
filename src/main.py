@@ -33,7 +33,7 @@ async def run_telegram_clients():
     #     config.api_hash_second,
     # )
 
-    main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
+    # main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
     # main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     main_client.add_event_handler(save_edited, events.MessageEdited())
