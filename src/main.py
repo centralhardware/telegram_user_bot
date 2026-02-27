@@ -6,12 +6,7 @@ from telethon import events, functions
 from telethon.errors import AuthKeyUnregisteredError
 
 from config import config
-from scrapper import (
-    save_outgoing,
-    save_deleted,
-    save_edited,
-    flush_batches,
-)
+
 from telethon import TelegramClient
 
 def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
@@ -34,9 +29,9 @@ async def run_telegram_clients():
     # )
 
     # main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
-    main_client.add_event_handler(save_deleted, events.MessageDeleted())
+    # main_client.add_event_handler(save_deleted, events.MessageDeleted())
     # main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
-    main_client.add_event_handler(save_edited, events.MessageEdited())
+    # main_client.add_event_handler(save_edited, events.MessageEdited())
     # second_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     # second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     # second_client.add_event_handler(save_deleted, events.MessageDeleted())
@@ -83,7 +78,7 @@ async def run_telegram_clients():
         #     fetch_user_sessions, "interval", minutes=1, args=[main_client]
         # )
 
-    scheduler.add_job(flush_batches, "interval", seconds=10)
+    # scheduler.add_job(flush_batches, "interval", seconds=10)
     scheduler.start()
 
     for client in started_clients:
