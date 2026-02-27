@@ -8,7 +8,6 @@ from telethon.errors import AuthKeyUnregisteredError
 from config import config
 from scrapper import (
     save_outgoing,
-    save_incoming,
     save_deleted,
     save_edited,
     flush_batches,
@@ -36,7 +35,7 @@ async def run_telegram_clients():
 
     main_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     main_client.add_event_handler(save_deleted, events.MessageDeleted())
-    main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
+    # main_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     main_client.add_event_handler(save_edited, events.MessageEdited())
     # second_client.add_event_handler(save_outgoing, events.NewMessage(outgoing=True))
     # second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
