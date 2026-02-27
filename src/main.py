@@ -17,6 +17,7 @@ from telethon import TelegramClient
 from admin_logs import fetch_channel_actions
 from fetch_sessions import fetch_user_sessions
 
+
 def create_client(session_name: str, api_id: int, api_hash: str) -> TelegramClient:
     """Create a Telegram client using provided API credentials."""
     return TelegramClient(
@@ -44,6 +45,8 @@ async def run_telegram_clients():
     # second_client.add_event_handler(save_incoming, events.NewMessage(incoming=True))
     # second_client.add_event_handler(save_deleted, events.MessageDeleted())
     # second_client.add_event_handler(save_edited, events.MessageEdited())
+
+    # main_client.add_event_handler(handle_catbot_trigger, events.NewMessage())
 
     started_clients = []
 
